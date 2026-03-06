@@ -11,96 +11,193 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: -apple-system, system-ui, sans-serif; font-size:13px; background:#1a1a2e; color:#e0e0e0; }
 .layout { display:flex; height:100vh; }
-.sidebar { width:320px; min-width:320px; padding:12px; overflow-y:auto; background:#16213e; border-right:1px solid #333; }
+.sidebar { width:340px; min-width:340px; padding:10px; overflow-y:auto; background:#16213e; border-right:1px solid #333; }
 .main { flex:1; display:flex; flex-direction:column; }
 #map { height:40%; min-height:200px; }
 .charts { flex:1; overflow-y:auto; padding:8px; }
-h1 { font-size:16px; margin-bottom:8px; color:#a8dadc; }
-h2 { font-size:13px; margin:10px 0 4px; color:#a8dadc; }
-label { display:block; margin:3px 0 1px; font-size:11px; color:#999; }
+h1 { font-size:16px; margin-bottom:6px; color:#a8dadc; }
+h2 { font-size:12px; margin:8px 0 3px; color:#a8dadc; text-transform:uppercase; letter-spacing:0.5px; }
+label { display:block; margin:2px 0 1px; font-size:11px; color:#999; }
 select, input[type=number], input[type=text] {
-  width:100%; padding:4px 6px; margin-bottom:4px; background:#0f3460; border:1px solid #444;
+  width:100%; padding:3px 5px; margin-bottom:3px; background:#0f3460; border:1px solid #444;
   color:#e0e0e0; border-radius:3px; font-size:12px;
 }
 input[type=range] { width:100%; margin:2px 0; }
-.range-val { font-size:11px; color:#888; text-align:right; }
+.range-val { font-size:11px; color:#888; }
 button {
-  width:100%; padding:8px; margin:8px 0 4px; background:#e94560; color:white;
+  width:100%; padding:7px; margin:6px 0 4px; background:#e94560; color:white;
   border:none; border-radius:4px; cursor:pointer; font-size:13px; font-weight:600;
 }
 button:hover { background:#c81e45; }
 button:disabled { background:#555; cursor:wait; }
 .status { font-size:11px; padding:4px; background:#0a0a1a; border-radius:3px;
-  margin:4px 0; min-height:20px; color:#4ecdc4; white-space:pre-wrap; }
-.coords { font-size:12px; color:#f1c40f; margin:4px 0; }
-.loc-list { max-height:150px; overflow-y:auto; font-size:11px; }
+  margin:3px 0; min-height:18px; color:#4ecdc4; white-space:pre-wrap; }
+.coords { font-size:12px; color:#f1c40f; margin:3px 0; }
+.loc-list { max-height:120px; overflow-y:auto; font-size:11px; }
 .loc-item { padding:2px 4px; cursor:pointer; border-radius:2px; }
 .loc-item:hover { background:#0f3460; }
 .chart-box { background:#16213e; border-radius:6px; margin-bottom:8px; padding:4px; }
 .legend { font-size:10px; color:#999; padding:2px 8px; }
+.row { display:flex; gap:6px; }
+.row > * { flex:1; }
+.progress-bar { height:4px; background:#0a0a1a; border-radius:2px; margin:3px 0; display:none; overflow:hidden; }
+.progress-bar .fill { height:100%; background:#4ecdc4; width:0%; transition:width 0.2s; border-radius:2px; }
+.dataset-panel { background:#0a0a1a; border-radius:4px; padding:6px; margin:4px 0; font-size:11px; }
+.dataset-panel .ds { margin-bottom:4px; padding:3px 0; border-bottom:1px solid #222; }
+.dataset-panel .ds:last-child { border-bottom:none; margin-bottom:0; }
+.dataset-panel .ds-name { color:#a8dadc; font-weight:600; }
+.dataset-panel .ds-source { color:#888; font-size:10px; }
+.dataset-panel .ds-desc { color:#bbb; margin-top:1px; }
+.dataset-panel .ds-status { font-size:10px; }
+.ds-avail { color:#2ecc71; }
+.ds-unavail { color:#e74c3c; }
+a { color:#4ecdc4; }
+.fit-info { font-size:10px; color:#888; margin:2px 0; }
+.collapsible { cursor:pointer; user-select:none; }
+.collapsible::before { content:'+ '; color:#4ecdc4; }
+.collapsible.open::before { content:'- '; }
+.collapse-body { display:none; }
+.collapse-body.open { display:block; }
 </style>
 </head>
 <body>
 <div class="layout">
   <div class="sidebar">
     <h1>Phenology Explorer</h1>
-    <p style="font-size:11px;color:#888;margin-bottom:8px">Click map or select a FlevoVision site to extract Sentinel-2 phenology.</p>
+    <p style="font-size:11px;color:#888;margin-bottom:6px">Click map to select pixel. <b>Shift-click</b> to add more locations for comparison. Data from
+      <a href="https://earth-search.aws.element84.com/v1" target="_blank">AWS Element84</a> (free, no login).</p>
 
-    <div class="coords" id="coordsDisplay">No pixel selected</div>
+    <div class="coords" id="coordsDisplay">No pixels selected</div>
 
     <h2>Date Range</h2>
-    <label>Start</label>
-    <input type="text" id="startDate" value="2018-01-01">
-    <label>End</label>
-    <input type="text" id="endDate" value="2018-12-31">
-
-    <h2>Pixel Window</h2>
-    <label>Size (pixels, 10m bands)</label>
-    <select id="windowSize">
-      <option value="1">1×1 (single pixel)</option>
-      <option value="3" selected>3×3 (30m)</option>
-      <option value="5">5×5 (50m)</option>
-    </select>
-
-    <h2>Smoothing</h2>
-    <label>Method</label>
-    <select id="smoothMethod">
-      <option value="savgol">Savitzky-Golay</option>
-      <option value="dct">DCT / Garcia (2010)</option>
-    </select>
-    <div id="sgParams">
-      <label>SG Window <span class="range-val" id="sgWinVal">31</span></label>
-      <input type="range" id="sgWindow" min="5" max="61" step="2" value="31">
-      <label>SG Polynomial Order</label>
-      <select id="sgPoly"><option>2</option><option selected>3</option><option>4</option></select>
-    </div>
-    <div id="dctParams" style="display:none">
-      <label>DCT smoothing (blank=auto GCV)</label>
-      <input type="number" id="dctS" placeholder="auto" step="0.1">
+    <div class="row">
+      <div><label>Start</label><input type="text" id="startDate" value="2018-01-01"></div>
+      <div><label>End</label><input type="text" id="endDate" value="2018-12-31"></div>
     </div>
 
-    <h2>Phenology Method</h2>
-    <select id="phenoMethod">
-      <option value="amplitude_threshold">Amplitude Threshold (20%)</option>
-      <option value="first_derivative">First Derivative (max/min)</option>
-      <option value="second_derivative">Second Derivative (inflection)</option>
-    </select>
-    <div id="threshDiv">
-      <label>Threshold <span class="range-val" id="threshVal">0.20</span></label>
-      <input type="range" id="threshold" min="0.05" max="0.5" step="0.05" value="0.2">
+    <h2>Download</h2>
+    <div class="row">
+      <div>
+        <label>Bands</label>
+        <select id="bandMode">
+          <option value="ndvi" selected>NDVI only (B04+B08+SCL)</option>
+          <option value="spectral">+ Spectral (B02-B08)</option>
+          <option value="all">All bands</option>
+        </select>
+      </div>
+      <div>
+        <label>Window</label>
+        <select id="windowSize">
+          <option value="1">1x1</option>
+          <option value="3" selected>3x3</option>
+          <option value="5">5x5</option>
+        </select>
+      </div>
     </div>
 
-    <button id="extractBtn" onclick="doExtract()">Extract & Analyse</button>
+    <h2 class="collapsible" onclick="toggleSection(this)">Smoothing</h2>
+    <div class="collapse-body open">
+      <label>Method</label>
+      <select id="smoothMethod">
+        <option value="savgol">Savitzky-Golay</option>
+        <option value="dct">DCT / Garcia (2010)</option>
+      </select>
+      <div id="sgParams">
+        <div class="row">
+          <div><label>SG Window <span class="range-val" id="sgWinVal">31</span></label>
+          <input type="range" id="sgWindow" min="5" max="61" step="2" value="31"></div>
+          <div><label>SG Poly</label>
+          <select id="sgPoly"><option>2</option><option selected>3</option><option>4</option></select></div>
+        </div>
+      </div>
+      <div id="dctParams" style="display:none">
+        <label>DCT smoothing (blank=auto GCV)</label>
+        <input type="number" id="dctS" placeholder="auto" step="0.1">
+      </div>
+    </div>
+
+    <h2 class="collapsible" onclick="toggleSection(this)">Outlier Detection</h2>
+    <div class="collapse-body open">
+      <div class="row">
+        <div><label>Method</label>
+        <select id="outlierMethod">
+          <option value="mad" selected>MAD (robust)</option>
+          <option value="iqr">IQR</option>
+          <option value="temporal">Temporal neighbors</option>
+          <option value="none">None</option>
+        </select></div>
+        <div><label>Z-threshold <span class="range-val" id="outlierThreshVal">3.5</span></label>
+        <input type="range" id="outlierThreshold" min="2" max="6" step="0.5" value="3.5"></div>
+      </div>
+    </div>
+
+    <h2 class="collapsible" onclick="toggleSection(this)">Curve Fitting</h2>
+    <div class="collapse-body open">
+      <label>Method</label>
+      <select id="fitMethod" onchange="updateFitUI()">
+        <option value="smooth">Smoothing only (SG / DCT)</option>
+        <option value="double_logistic">Double Logistic</option>
+        <option value="both" selected>Both (smoothing + DL)</option>
+      </select>
+      <div id="dlParamsDiv">
+        <label>DL Iterations</label>
+        <select id="dlIterations"><option>1</option><option>2</option><option selected>3</option><option>5</option></select>
+      </div>
+    </div>
+
+    <h2 class="collapsible" onclick="toggleSection(this)">Phenometrics</h2>
+    <div class="collapse-body open">
+      <label>Extraction from</label>
+      <select id="phenoSource">
+        <option value="smooth">Smoothed curve</option>
+        <option value="dl">Double Logistic fit</option>
+      </select>
+      <label>Method</label>
+      <select id="phenoMethod">
+        <option value="amplitude_threshold">Amplitude Threshold</option>
+        <option value="first_derivative">First Derivative</option>
+        <option value="second_derivative">Second Derivative</option>
+      </select>
+      <div id="threshDiv">
+        <label>Threshold <span class="range-val" id="threshVal">0.20</span></label>
+        <input type="range" id="threshold" min="0.05" max="0.5" step="0.05" value="0.2">
+      </div>
+    </div>
+
+    <div class="row">
+      <div style="flex:3"><button id="extractBtn" onclick="doExtract()">Extract & Analyse</button></div>
+      <div style="flex:1"><button id="cancelBtn" onclick="cancelExtract()" style="background:#555;display:none">Stop</button></div>
+    </div>
+    <div class="progress-bar" id="progressBar"><div class="fill"></div></div>
     <div class="status" id="status">Ready</div>
+    <div class="fit-info" id="fitInfo"></div>
 
-    <h2>FlevoVision Sites</h2>
-    <div class="loc-list" id="locList">Loading...</div>
+    <h2 class="collapsible" onclick="toggleSection(this)">Datasets</h2>
+    <div class="collapse-body open">
+      <div class="dataset-panel" id="datasetPanel">Loading...</div>
+    </div>
+
+    <h2 class="collapsible" onclick="toggleSection(this)">FlevoVision Sites</h2>
+    <div class="collapse-body open">
+      <div class="loc-list" id="locList">Loading...</div>
+    </div>
+
+    <div style="margin-top:12px;font-size:10px;color:#555;border-top:1px solid #333;padding-top:6px">
+      <b>References:</b><br>
+      <a href="https://doi.org/10.1016/j.compag.2022.106882" target="_blank">D'Andrimont et al. (2022)</a> — FlevoVision crop phenology<br>
+      <a href="https://doi.org/10.3389/fenvs.2023.1097249" target="_blank">Zeng et al. (2023)</a> — Phenology extraction methods<br>
+      <a href="https://doi.org/10.1016/j.csda.2009.09.020" target="_blank">Garcia (2010)</a> — DCT smoothing<br>
+      <a href="https://doi.org/10.1016/j.rse.2006.02.011" target="_blank">Beck et al. (2006)</a> — Double logistic model<br>
+      <a href="https://zenodo.org/records/15095445" target="_blank">EuroCropsML</a> — 706K EU crop parcels<br>
+      <a href="https://doi.org/10.1038/s41597-025-05762-7" target="_blank">D'Andrimont et al. (2025)</a> — Kenya Helmets crop type<br>
+      <a href="https://doi.org/10.1038/s41597-025-06330-9" target="_blank">Ren et al. (2025)</a> — NE China maize phenology
+    </div>
   </div>
 
   <div class="main">
     <div id="map"></div>
     <div class="charts">
-      <div class="chart-box" id="ndviChart" style="height:280px"></div>
+      <div class="chart-box" id="ndviChart" style="height:300px"></div>
       <div class="chart-box" id="bandChart" style="height:220px"></div>
       <div class="legend" id="phenoInfo"></div>
     </div>
@@ -108,59 +205,105 @@ button:disabled { background:#555; cursor:wait; }
 </div>
 
 <script>
+function toggleSection(el) {
+  el.classList.toggle('open');
+  el.nextElementSibling.classList.toggle('open');
+}
+
 // --- Map ---
 const map = L.map('map').setView([52.6, 5.7], 11);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19, attribution: '&copy; OSM'
 }).addTo(map);
-
-// Satellite layer
-const sat = L.tileLayer(
+const satLayer = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   {maxZoom: 19, attribution: 'Esri'}
 );
-L.control.layers({'OSM': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map), 'Satellite': sat}).addTo(map);
+// Layer control added after dataset markers load below
 
-let marker = null;
-let selectedLon = null, selectedLat = null;
+// --- Multi-location support ---
+const LOC_COLORS = ['#e94560','#f1c40f','#2ecc71','#3498db','#9b59b6','#e67e22','#1abc9c','#e74c3c'];
+let locations = [];  // [{lon, lat, marker, color}]
 
 map.on('click', function(e) {
-  selectPixel(e.latlng.lng, e.latlng.lat);
+  selectPixel(e.latlng.lng, e.latlng.lat, e.originalEvent.shiftKey);
 });
 
-function selectPixel(lon, lat) {
-  selectedLon = lon;
-  selectedLat = lat;
-  if (marker) map.removeLayer(marker);
-  marker = L.marker([lat, lon], {
-    icon: L.divIcon({className:'', html:'<div style="width:12px;height:12px;background:#e94560;border:2px solid white;border-radius:50%;margin:-6px"></div>'})
+function selectPixel(lon, lat, addMode) {
+  if (!addMode) {
+    // Clear previous locations
+    locations.forEach(l => map.removeLayer(l.marker));
+    locations = [];
+  }
+  const idx = locations.length;
+  const color = LOC_COLORS[idx % LOC_COLORS.length];
+  const marker = L.marker([lat, lon], {
+    icon: L.divIcon({className:'', html:`<div style="width:12px;height:12px;background:${color};border:2px solid white;border-radius:50%;margin:-6px"></div>`})
   }).addTo(map);
-  document.getElementById('coordsDisplay').textContent =
-    `Selected: ${lat.toFixed(5)}°N, ${lon.toFixed(5)}°E`;
+  locations.push({lon, lat, marker, color});
+  updateCoordsDisplay();
 }
 
-// --- FlevoVision locations ---
+function updateCoordsDisplay() {
+  const el = document.getElementById('coordsDisplay');
+  if (locations.length === 0) { el.textContent = 'No pixels selected'; return; }
+  el.innerHTML = locations.map((l,i) =>
+    `<span style="color:${l.color}">${i+1}: ${l.lat.toFixed(4)}°N, ${l.lon.toFixed(4)}°E</span>`
+  ).join(' &nbsp; ');
+}
+
+// --- Dataset location layers ---
 const locMarkers = L.layerGroup().addTo(map);
-fetch('/api/flevovision_locations')
-  .then(r => r.json())
-  .then(locs => {
-    const list = document.getElementById('locList');
-    list.innerHTML = '';
+const dwdMarkers = L.layerGroup();
+const phenocamMarkers = L.layerGroup();
+
+function addDatasetMarkers(url, group, color, prefix) {
+  fetch(url).then(r=>r.json()).then(locs => {
     locs.forEach(loc => {
-      // Map marker
       const m = L.circleMarker([loc.lat, loc.lon], {
-        radius: 4, color: '#4ecdc4', fillOpacity: 0.6, weight: 1
-      }).bindTooltip(`${loc.code} (${loc.id})`);
-      m.on('click', () => selectPixel(loc.lon, loc.lat));
-      locMarkers.addLayer(m);
-      // Sidebar entry
-      const div = document.createElement('div');
-      div.className = 'loc-item';
-      div.textContent = `${loc.code} (${loc.id})`;
-      div.onclick = () => { selectPixel(loc.lon, loc.lat); map.setView([loc.lat, loc.lon], 14); };
-      list.appendChild(div);
+        radius: prefix==='phenocam' ? 6 : 4, color, fillOpacity: 0.6, weight: 1
+      }).bindTooltip(`${prefix}: ${loc.code} (${loc.id})`);
+      m.on('click', (e) => {
+        selectPixel(loc.lon, loc.lat, e.originalEvent.shiftKey);
+        // Auto-extract if not shift-clicking
+        if (!e.originalEvent.shiftKey) setTimeout(doExtract, 200);
+      });
+      group.addLayer(m);
     });
+    if (prefix === 'flevovision') {
+      const list = document.getElementById('locList');
+      list.innerHTML = '';
+      locs.forEach(loc => {
+        const div = document.createElement('div');
+        div.className = 'loc-item';
+        div.textContent = `${loc.code} (${loc.id})`;
+        div.onclick = (e) => { selectPixel(loc.lon, loc.lat, e.shiftKey); map.setView([loc.lat, loc.lon], 14); if(!e.shiftKey) setTimeout(doExtract,200); };
+        list.appendChild(div);
+      });
+    }
   });
+}
+
+addDatasetMarkers('/api/flevovision_locations', locMarkers, '#4ecdc4', 'flevovision');
+addDatasetMarkers('/api/dwd_locations', dwdMarkers, '#e67e22', 'dwd');
+addDatasetMarkers('/api/phenocam_locations', phenocamMarkers, '#2ecc71', 'phenocam');
+
+L.control.layers(
+  {'OSM': osmLayer, 'Satellite': satLayer},
+  {'FlevoVision': locMarkers, 'DWD Germany': dwdMarkers, 'PhenoCam': phenocamMarkers},
+  {collapsed: true}
+).addTo(map);
+
+// --- Datasets ---
+fetch('/api/datasets').then(r=>r.json()).then(datasets => {
+  const panel = document.getElementById('datasetPanel');
+  panel.innerHTML = datasets.map(d => `<div class="ds">
+    <span class="ds-name">${d.name}</span>
+    <span class="ds-status ${d.available?'ds-avail':'ds-unavail'}">${d.available?'available':'not downloaded'}</span>
+    <div class="ds-source">${d.region} — ${d.source}</div>
+    <div class="ds-desc">${d.desc}</div>
+  </div>`).join('');
+});
 
 // --- UI toggles ---
 document.getElementById('smoothMethod').onchange = function() {
@@ -173,161 +316,410 @@ document.getElementById('sgWindow').oninput = function() {
 document.getElementById('threshold').oninput = function() {
   document.getElementById('threshVal').textContent = parseFloat(this.value).toFixed(2);
 };
-document.getElementById('phenoMethod').onchange = function() {
-  document.getElementById('threshDiv').style.display =
-    this.value === 'amplitude_threshold' ? '' : 'none';
+document.getElementById('outlierThreshold').oninput = function() {
+  document.getElementById('outlierThreshVal').textContent = parseFloat(this.value).toFixed(1);
 };
+document.getElementById('phenoMethod').onchange = function() {
+  document.getElementById('threshDiv').style.display = this.value === 'amplitude_threshold' ? '' : 'none';
+};
+function updateFitUI() {
+  const fm = document.getElementById('fitMethod').value;
+  document.getElementById('dlParamsDiv').style.display = (fm === 'double_logistic' || fm === 'both') ? '' : 'none';
+  if (fm === 'double_logistic') document.getElementById('phenoSource').value = 'dl';
+  else if (fm === 'smooth') document.getElementById('phenoSource').value = 'smooth';
+}
 
-// --- Extract ---
-function doExtract() {
-  if (!selectedLon || !selectedLat) {
-    document.getElementById('status').textContent = 'Click the map first to select a pixel.';
+// --- Extract (streaming NDJSON with live plot + cancel) ---
+let abortController = null;
+
+function cancelExtract() {
+  if (abortController) abortController.abort();
+}
+
+async function doExtract() {
+  if (locations.length === 0) {
+    document.getElementById('status').textContent = 'Click the map first.';
     return;
   }
   const btn = document.getElementById('extractBtn');
-  btn.disabled = true;
-  btn.textContent = 'Extracting...';
+  const cancelBtn = document.getElementById('cancelBtn');
+  btn.disabled = true; btn.textContent = 'Extracting...';
+  cancelBtn.style.display = '';
   const status = document.getElementById('status');
-  status.textContent = 'Querying STAC and reading COGs...';
+  const fitInfo = document.getElementById('fitInfo');
+  fitInfo.textContent = '';
+  const prog = document.getElementById('progressBar');
+  prog.style.display = 'block';
+  prog.querySelector('.fill').style.width = '0%';
 
-  const dctS = document.getElementById('dctS').value;
-  const body = {
-    lon: selectedLon, lat: selectedLat,
+  // Clear charts immediately when starting new extraction
+  initLiveChart();
+  Plotly.purge('bandChart');
+
+  const baseBody = {
     start_date: document.getElementById('startDate').value,
     end_date: document.getElementById('endDate').value,
     smooth_method: document.getElementById('smoothMethod').value,
     sg_window: parseInt(document.getElementById('sgWindow').value),
     sg_poly: parseInt(document.getElementById('sgPoly').value),
-    dct_s: dctS ? parseFloat(dctS) : null,
+    dct_s: document.getElementById('dctS').value ? parseFloat(document.getElementById('dctS').value) : null,
     pheno_method: document.getElementById('phenoMethod').value,
     threshold: parseFloat(document.getElementById('threshold').value),
     window_size: parseInt(document.getElementById('windowSize').value),
+    band_mode: document.getElementById('bandMode').value,
+    outlier_method: document.getElementById('outlierMethod').value,
+    outlier_threshold: parseFloat(document.getElementById('outlierThreshold').value),
+    fit_method: document.getElementById('fitMethod').value,
+    dl_iterations: parseInt(document.getElementById('dlIterations').value),
+    pheno_source: document.getElementById('phenoSource').value,
   };
 
-  fetch('/api/extract', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(body),
-  })
-  .then(r => r.json())
-  .then(data => {
-    btn.disabled = false;
-    btn.textContent = 'Extract & Analyse';
-    if (data.error) {
-      status.textContent = 'Error: ' + data.error;
-      return;
+  // Process each location sequentially
+  const allResults = [];
+  let cancelled = false;
+
+  for (let li = 0; li < locations.length; li++) {
+    if (cancelled) break;
+    const loc = locations[li];
+    const locLabel = locations.length > 1 ? `[${li+1}/${locations.length}] ` : '';
+    status.textContent = `${locLabel}Querying STAC...`;
+
+    const body = {...baseBody, lon: loc.lon, lat: loc.lat};
+    abortController = new AbortController();
+
+    const liveDoys = [], liveNdvis = [], liveColors = [];
+
+    try {
+      const response = await fetch('/api/extract', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body),
+        signal: abortController.signal,
+      });
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let resultData = null;
+      let cacheHits = 0, totalScenes = 0;
+
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, {stream: true});
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const msg = JSON.parse(line);
+            if (msg.type === 'status') {
+              status.textContent = locLabel + msg.msg;
+            } else if (msg.type === 'progress') {
+              totalScenes = msg.total;
+              if (msg.cached) cacheHits++;
+              const pct = (msg.current / msg.total * 100).toFixed(0);
+              prog.querySelector('.fill').style.width = pct + '%';
+              const cacheStr = cacheHits > 0 ? ` (${cacheHits} cached)` : '';
+              const timeStr = msg.cached ? 'cached' : `${msg.elapsed}s`;
+              status.textContent = `${locLabel}Scene ${msg.current}/${msg.total} (${msg.date}) ${timeStr}${cacheStr}`;
+              // Live NDVI plot
+              if (msg.ndvi !== null && msg.ndvi !== undefined) {
+                const dt = new Date(msg.date + 'T00:00:00');
+                const doy = Math.floor((dt - new Date(dt.getFullYear(),0,0)) / 86400000);
+                liveDoys.push(doy);
+                liveNdvis.push(msg.ndvi);
+                liveColors.push(SCL_COLORS[msg.scl] || '#888');
+                updateLiveChart(liveDoys, liveNdvis, liveColors, loc.color, li);
+              }
+            } else if (msg.type === 'error') {
+              status.textContent = locLabel + 'Error: ' + msg.msg;
+            } else if (msg.type === 'result') {
+              resultData = msg.data;
+              resultData._locColor = loc.color;
+              resultData._locIndex = li;
+              resultData._locLabel = `${loc.lat.toFixed(3)}°N, ${loc.lon.toFixed(3)}°E`;
+            }
+          } catch(e) {}
+        }
+      }
+
+      if (resultData) {
+        allResults.push(resultData);
+        let summary = `${resultData.n_scenes} scenes, ${resultData.n_clear} clear`;
+        if (cacheHits > 0) summary += `, ${cacheHits} cached`;
+        if (resultData.outliers_removed > 0) summary += `, ${resultData.outliers_removed} outliers`;
+        summary += ` (${resultData.elapsed}s)`;
+        status.textContent = locLabel + summary;
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        status.textContent = 'Cancelled.';
+        cancelled = true;
+      } else {
+        status.textContent = locLabel + 'Error: ' + err;
+      }
     }
-    status.textContent = `${data.n_scenes} scenes, ${data.n_clear} clear obs`;
-    plotResults(data, body.smooth_method);
-  })
-  .catch(err => {
-    btn.disabled = false;
-    btn.textContent = 'Extract & Analyse';
-    status.textContent = 'Error: ' + err;
-  });
+  }
+
+  btn.disabled = false; btn.textContent = 'Extract & Analyse';
+  cancelBtn.style.display = 'none';
+  prog.style.display = 'none';
+  abortController = null;
+
+  if (allResults.length > 0) {
+    // Fetch validation data for all locations, then plot everything together
+    const validationPromises = locations.map(loc =>
+      fetch(`/api/validation_data?lon=${loc.lon}&lat=${loc.lat}&start_date=${baseBody.start_date}&end_date=${baseBody.end_date}`)
+        .then(r => r.json()).catch(() => [])
+    );
+    const allValidation = await Promise.all(validationPromises);
+    plotAllResults(allResults, baseBody.smooth_method, allValidation);
+    const last = allResults[allResults.length - 1];
+    if (last.double_logistic && last.double_logistic.iterations) {
+      fitInfo.textContent = 'DL fit: ' + last.double_logistic.iterations
+        .map(i => `iter${i.iteration} RMSE=${i.rmse||'fail'}`).join(', ');
+    }
+  }
 }
 
-// --- Plotting ---
+// --- Live chart during download ---
 const SCL_COLORS = {
-  0:'#333', 1:'#ff0000', 2:'#555', 3:'#ff8c00', 4:'#2ecc71',
-  5:'#e67e22', 6:'#3498db', 7:'#95a5a6', 8:'#e74c3c',
-  9:'#c0392b', 10:'#dda0dd', 11:'#ecf0f1'
+  0:'#333',1:'#ff0000',2:'#555',3:'#ff8c00',4:'#2ecc71',
+  5:'#e67e22',6:'#3498db',7:'#95a5a6',8:'#e74c3c',
+  9:'#c0392b',10:'#dda0dd',11:'#ecf0f1'
 };
 const SCL_NAMES = {
   0:'nodata',1:'saturated',2:'dark',3:'shadow',4:'vegetation',
   5:'bare_soil',6:'water',7:'unclassified',8:'cloud_med',
   9:'cloud_high',10:'cirrus',11:'snow'
 };
+const chartLayout = {
+  paper_bgcolor:'#16213e', plot_bgcolor:'#0f3460',
+  legend:{font:{size:10,color:'#ccc'},bgcolor:'rgba(0,0,0,0.3)'},
+  margin:{t:40,b:40,l:50,r:20},
+};
 
-function plotResults(data, smoothMethod) {
-  const raw = data.raw;
-  // NDVI scatter colored by SCL
-  const doys = raw.filter(r=>r.ndvi!==null).map(r=>r.doy);
-  const ndvis = raw.filter(r=>r.ndvi!==null).map(r=>r.ndvi);
-  const colors = raw.filter(r=>r.ndvi!==null).map(r=>SCL_COLORS[r.scl]||'#888');
-  const labels = raw.filter(r=>r.ndvi!==null).map(r=>
-    `${r.date} SCL=${r.scl} (${SCL_NAMES[r.scl]||'?'}) cloud=${r.cloud_cover?.toFixed(0)}%`
-  );
-
-  const traces = [{
-    x: doys, y: ndvis, mode:'markers', type:'scatter',
-    marker:{color:colors, size:6, line:{color:'#fff',width:0.5}},
-    text: labels, name:'NDVI (all obs)',
-  }];
-
-  // Smoothed curve
-  if (data.smoothed) {
-    traces.push({
-      x: data.smoothed.t, y: data.smoothed.y,
-      mode:'lines', line:{color:'#f1c40f', width:2},
-      name: smoothMethod === 'dct' ? 'DCT smooth' : 'Savitzky-Golay',
-    });
-  }
-
-  // Double logistic fit
-  if (data.double_logistic) {
-    traces.push({
-      x: data.double_logistic.t, y: data.double_logistic.y,
-      mode:'lines', line:{color:'#e94560', width:2, dash:'dot'},
-      name:'Double logistic fit',
-    });
-  }
-
-  // Phenometric markers
-  const shapes = [];
-  const annots = [];
-  if (data.phenometrics) {
-    const pm = data.phenometrics;
-    [{key:'SOS',color:'#2ecc71',label:'SOS'},{key:'POS',color:'#3498db',label:'POS'},{key:'EOS',color:'#e67e22',label:'EOS'}]
-    .forEach(({key,color,label}) => {
-      if (pm[key]) {
-        shapes.push({type:'line',x0:pm[key],x1:pm[key],y0:-0.2,y1:1,
-          line:{color,width:2,dash:'dash'}});
-        annots.push({x:pm[key],y:1.02,text:label+' '+Math.round(pm[key]),
-          showarrow:false,font:{size:10,color}});
-      }
-    });
-  }
-
-  Plotly.newPlot('ndviChart', traces, {
-    title:{text:'NDVI Time Series & Phenology', font:{size:13,color:'#a8dadc'}},
+function initLiveChart() {
+  Plotly.newPlot('ndviChart', [], {
+    ...chartLayout,
+    title:{text:'NDVI (downloading...)', font:{size:13,color:'#a8dadc'}},
     xaxis:{title:'Day of Year',range:[1,365],color:'#888',gridcolor:'#333'},
     yaxis:{title:'NDVI',range:[-0.2,1],color:'#888',gridcolor:'#333'},
-    paper_bgcolor:'#16213e', plot_bgcolor:'#0f3460',
-    legend:{font:{size:10,color:'#ccc'},bgcolor:'rgba(0,0,0,0.3)'},
-    shapes, annotations: annots, margin:{t:40,b:40,l:50,r:20},
+  }, {responsive:true});
+}
+
+let liveTraceIndex = {};
+function updateLiveChart(doys, ndvis, colors, locColor, locIdx) {
+  if (!(locIdx in liveTraceIndex)) {
+    const traceIdx = Plotly.d3 ? document.getElementById('ndviChart').data.length : locIdx;
+    Plotly.addTraces('ndviChart', {
+      x: [], y: [], mode:'markers', type:'scatter',
+      marker:{color:[], size:6, line:{color:locColor, width:1}},
+      name: locations.length > 1 ? `Loc ${locIdx+1}` : 'NDVI',
+    });
+    liveTraceIndex[locIdx] = document.getElementById('ndviChart').data.length - 1;
+  }
+  const ti = liveTraceIndex[locIdx];
+  Plotly.restyle('ndviChart', {x:[doys], y:[ndvis], 'marker.color':[colors]}, [ti]);
+}
+
+// --- Final plot with all results ---
+function plotAllResults(results, smoothMethod, allValidation) {
+  liveTraceIndex = {};
+  const traces = [];
+  const shapes = [], annots = [];
+  const multiLoc = results.length > 1;
+  allValidation = allValidation || [];
+
+  results.forEach((data, ri) => {
+    const raw = data.raw;
+    const valid = raw.filter(r => r.ndvi !== null);
+    const nonOutlier = valid.filter(r => !r.is_outlier);
+    const outliers = valid.filter(r => r.is_outlier);
+    const color = data._locColor || LOC_COLORS[ri % LOC_COLORS.length];
+    const label = multiLoc ? data._locLabel : '';
+
+    if (nonOutlier.length > 0) {
+      if (multiLoc) {
+        // Multi-location: one trace per location, uniform color
+        traces.push({
+          x: nonOutlier.map(r=>r.doy), y: nonOutlier.map(r=>r.ndvi),
+          mode:'markers', type:'scatter',
+          marker:{color: color, size:6, line:{color:'#fff',width:0.5}},
+          text: nonOutlier.map(r=>`${r.date} SCL=${r.scl} (${SCL_NAMES[r.scl]||'?'})`),
+          name: `${label} NDVI`,
+        });
+      } else {
+        // Single location: separate trace per SCL class for legend key
+        const sclGroups = {};
+        nonOutlier.forEach(r => {
+          const s = r.scl ?? -1;
+          if (!sclGroups[s]) sclGroups[s] = {doys:[], ndvis:[], texts:[]};
+          sclGroups[s].doys.push(r.doy);
+          sclGroups[s].ndvis.push(r.ndvi);
+          sclGroups[s].texts.push(`${r.date} SCL=${r.scl} cloud=${r.cloud_cover?.toFixed(0)}%`);
+        });
+        for (const [scl, g] of Object.entries(sclGroups)) {
+          const s = parseInt(scl);
+          traces.push({
+            x: g.doys, y: g.ndvis, mode:'markers', type:'scatter',
+            marker:{color: SCL_COLORS[s]||'#888', size:6, line:{color:'#fff',width:0.5}},
+            text: g.texts,
+            name: `SCL ${s}: ${SCL_NAMES[s]||'unknown'}`,
+            legendgroup: 'scl',
+          });
+        }
+      }
+    }
+
+    if (outliers.length > 0) {
+      traces.push({
+        x: outliers.map(r=>r.doy), y: outliers.map(r=>r.ndvi),
+        mode:'markers', type:'scatter',
+        marker:{color:'#ff0000', size:8, symbol:'x', line:{color:'#ff0000',width:2}},
+        name: multiLoc ? `${label} outliers` : `Outliers (${outliers.length})`,
+      });
+    }
+
+    if (data.smoothed) {
+      traces.push({
+        x: data.smoothed.t, y: data.smoothed.y,
+        mode:'lines', line:{color: multiLoc ? color : '#f1c40f', width:2,
+                            dash: multiLoc ? undefined : undefined},
+        name: multiLoc ? `${label} smooth` : (smoothMethod === 'dct' ? 'DCT smooth' : 'Savitzky-Golay'),
+      });
+    }
+
+    if (data.double_logistic) {
+      traces.push({
+        x: data.double_logistic.t, y: data.double_logistic.y,
+        mode:'lines', line:{color: multiLoc ? color : '#e94560', width:2, dash:'dot'},
+        name: multiLoc ? `${label} DL` : `Double logistic (RMSE=${data.double_logistic.rmse?.toFixed(4)})`,
+      });
+    }
+
+    if (data.phenometrics) {
+      const pm = data.phenometrics;
+      [{key:'SOS',color:'#2ecc71'},{key:'POS',color:'#3498db'},{key:'EOS',color:'#e67e22'}]
+      .forEach(({key,color:pc}) => {
+        if (pm[key]) {
+          const lc = multiLoc ? color : pc;
+          shapes.push({type:'line',x0:pm[key],x1:pm[key],y0:-0.2,y1:1,
+            line:{color:lc,width:1.5,dash:'dash'}});
+          const prefix = multiLoc ? `L${ri+1} ` : '';
+          annots.push({x:pm[key],y:1.02-ri*0.05,text:prefix+key+' '+Math.round(pm[key]),
+            showarrow:false,font:{size:10,color:lc}});
+        }
+      });
+    }
+
+    // --- Validation data (BBCH ground truth) ---
+    const valData = allValidation[ri] || [];
+    if (valData.length > 0) {
+      const BBCH_COLORS = {
+        0:'#88cc88', 10:'#55aa55', 20:'#228B22', 30:'#006400',
+        40:'#4169E1', 50:'#9370DB', 60:'#FF69B4', 70:'#DAA520',
+        80:'#CD853F', 90:'#8B4513',
+      };
+      const valDoys = valData.map(v => v.doy);
+      const valY = valData.map(v => v.bbch !== null ? v.bbch / 100 : 0.5);
+      const valColors = valData.map(v => {
+        if (v.bbch === null) return '#aaa';
+        const decade = Math.floor(v.bbch / 10) * 10;
+        return BBCH_COLORS[decade] || '#aaa';
+      });
+      const valTexts = valData.map(v =>
+        `${v.date} BBCH ${v.bbch ?? '?'}: ${v.bbch_desc}<br>${v.crop_name} (${v.source})`
+      );
+
+      traces.push({
+        x: valDoys, y: valY,
+        mode: 'markers+text', type: 'scatter',
+        marker: {color: valColors, size: 12, symbol: 'diamond',
+                 line: {color: '#fff', width: 1.5}},
+        text: valData.map(v => v.bbch !== null ? `${v.bbch}` : '?'),
+        textposition: 'top center',
+        textfont: {size: 9, color: '#ddd'},
+        hovertext: valTexts,
+        hoverinfo: 'text',
+        name: multiLoc ? `L${ri+1} BBCH` : 'BBCH ground truth',
+        yaxis: 'y2',
+      });
+
+      // Add thin vertical lines at each observation DOY
+      valData.forEach(v => {
+        shapes.push({
+          type: 'line', x0: v.doy, x1: v.doy, y0: -0.2, y1: 1,
+          yref: 'y',
+          line: {color: 'rgba(255,255,255,0.15)', width: 1, dash: 'dot'},
+        });
+      });
+    }
+  });
+
+  // Check if any validation data exists to add secondary axis
+  const hasValidation = allValidation.some(v => v && v.length > 0);
+
+  Plotly.newPlot('ndviChart', traces, {
+    ...chartLayout,
+    title:{text: multiLoc ? 'NDVI Comparison' : 'NDVI Time Series & Phenology', font:{size:13,color:'#a8dadc'}},
+    xaxis:{title:'Day of Year',range:[1,365],color:'#888',gridcolor:'#333'},
+    yaxis:{title:'NDVI',range:[-0.2,1],color:'#888',gridcolor:'#333'},
+    ...(hasValidation ? {yaxis2:{title:'BBCH',range:[0,1],overlaying:'y',side:'right',
+      color:'#888',gridcolor:'rgba(0,0,0,0)',tickvals:[0,0.1,0.2,0.3,0.5,0.6,0.7,0.9,1.0],
+      ticktext:['0','10','20','30','50','60','70','90','100']}} : {}),
+    shapes, annotations: annots,
   }, {responsive:true});
 
-  // Phenometrics info
+  // Phenometrics info (show last or all)
   const info = document.getElementById('phenoInfo');
-  if (data.phenometrics) {
+  info.innerHTML = results.map((data, ri) => {
     const pm = data.phenometrics;
-    info.innerHTML = `<b>Phenometrics (${pm.method}):</b> `
-      + `SOS=${pm.SOS?Math.round(pm.SOS):'N/A'} `
-      + `POS=${pm.POS?Math.round(pm.POS):'N/A'} `
-      + `EOS=${pm.EOS?Math.round(pm.EOS):'N/A'} `
-      + `Amplitude=${pm.amplitude?.toFixed(3)}`;
-  }
+    if (!pm) return '';
+    const prefix = multiLoc ? `<span style="color:${data._locColor}">Loc ${ri+1}</span> ` : '';
+    let html = `${prefix}<b>(${pm.method}):</b> SOS=${pm.SOS?Math.round(pm.SOS):'N/A'} `
+      + `POS=${pm.POS?Math.round(pm.POS):'N/A'} EOS=${pm.EOS?Math.round(pm.EOS):'N/A'} `
+      + `Amp=${pm.amplitude?.toFixed(3)}`;
+    if (data.double_logistic) {
+      const p = data.double_logistic.params;
+      html += ` | DL: base=${p[0].toFixed(2)} amp=${p[1].toFixed(2)} greenup=${p[3].toFixed(0)} senesc=${p[5].toFixed(0)}`;
+    }
+    return html;
+  }).join('<br>');
 
-  // Band chart (RGB + NIR for clear obs)
-  const clear = raw.filter(r => r.is_clear && r.B04 !== null);
-  if (clear.length > 0) {
+  // Band chart
+  const data0 = results[0];
+  const raw0 = data0.raw;
+  const clear = raw0.filter(r => r.is_clear && r.B04 !== null && !r.is_outlier);
+  if (clear.length > 0 && clear[0].B02 !== undefined) {
     const cdoys = clear.map(r=>r.doy);
-    const bandTraces = [
+    Plotly.newPlot('bandChart', [
       {x:cdoys, y:clear.map(r=>r.B02/10000), name:'B02 Blue', line:{color:'#3498db'}},
       {x:cdoys, y:clear.map(r=>r.B03/10000), name:'B03 Green', line:{color:'#2ecc71'}},
       {x:cdoys, y:clear.map(r=>r.B04/10000), name:'B04 Red', line:{color:'#e74c3c'}},
       {x:cdoys, y:clear.map(r=>r.B08/10000), name:'B08 NIR', line:{color:'#9b59b6'}},
-    ].map(t => ({...t, mode:'lines+markers', marker:{size:3}}));
-
-    Plotly.newPlot('bandChart', bandTraces, {
-      title:{text:'Spectral Bands (clear obs only)', font:{size:13,color:'#a8dadc'}},
+    ].map(t => ({...t, mode:'lines+markers', marker:{size:3}})), {
+      ...chartLayout,
+      title:{text:'Spectral Bands (clear, non-outlier)', font:{size:13,color:'#a8dadc'}},
       xaxis:{title:'Day of Year',range:[1,365],color:'#888',gridcolor:'#333'},
       yaxis:{title:'Reflectance',color:'#888',gridcolor:'#333'},
-      paper_bgcolor:'#16213e', plot_bgcolor:'#0f3460',
-      legend:{font:{size:10,color:'#ccc'},bgcolor:'rgba(0,0,0,0.3)'},
-      margin:{t:40,b:40,l:50,r:20},
     }, {responsive:true});
+  } else {
+    const clearNdvi = raw0.filter(r => r.is_clear && r.ndvi !== null && !r.is_outlier);
+    if (clearNdvi.length > 0) {
+      Plotly.newPlot('bandChart', [
+        {x:clearNdvi.map(r=>r.doy), y:clearNdvi.map(r=>r.ndvi), name:'NDVI',
+         mode:'lines+markers', marker:{size:3}, line:{color:'#2ecc71'}},
+        {x:clearNdvi.map(r=>r.doy), y:clearNdvi.map(r=>r.evi2), name:'EVI2',
+         mode:'lines+markers', marker:{size:3}, line:{color:'#e67e22'}},
+      ], {
+        ...chartLayout,
+        title:{text:'Vegetation Indices (clear, non-outlier)', font:{size:13,color:'#a8dadc'}},
+        xaxis:{title:'Day of Year',range:[1,365],color:'#888',gridcolor:'#333'},
+        yaxis:{title:'Index value',color:'#888',gridcolor:'#333'},
+      }, {responsive:true});
+    }
   }
 }
 </script>

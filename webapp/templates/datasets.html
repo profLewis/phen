@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crop & Phenology Datasets Catalog</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, system-ui, sans-serif; font-size:14px; background:#1a1a2e; color:#e0e0e0; line-height:1.5; }
+.container { max-width:1100px; margin:0 auto; padding:20px; }
+h1 { color:#a8dadc; font-size:24px; margin-bottom:4px; }
+.subtitle { color:#888; font-size:13px; margin-bottom:24px; }
+.subtitle a { color:#4ecdc4; }
+h2 { color:#e94560; font-size:16px; margin:28px 0 12px; padding-bottom:4px; border-bottom:1px solid #333;
+     text-transform:uppercase; letter-spacing:1px; }
+.card { background:#16213e; border-radius:8px; padding:14px 16px; margin-bottom:10px; border-left:4px solid #333; }
+.card.crop-type { border-left-color:#2ecc71; }
+.card.phenology { border-left-color:#e94560; }
+.card.yield { border-left-color:#f1c40f; }
+.card.satellite { border-left-color:#3498db; }
+.card.benchmark { border-left-color:#9b59b6; }
+.card-title { font-size:15px; font-weight:700; color:#a8dadc; }
+.card-title a { color:#a8dadc; text-decoration:none; }
+.card-title a:hover { text-decoration:underline; }
+.meta { font-size:11px; color:#888; margin:3px 0 6px; }
+.tag { display:inline-block; padding:1px 7px; border-radius:10px; font-size:10px; font-weight:600;
+       margin-right:4px; margin-bottom:2px; }
+.tag-region { background:#0f3460; color:#4ecdc4; }
+.tag-crop { background:#1a3a1a; color:#2ecc71; }
+.tag-format { background:#3a2a0a; color:#f1c40f; }
+.tag-size { background:#2a1a3a; color:#9b59b6; }
+.tag-license { background:#1a2a3a; color:#3498db; }
+.tag-year { background:#3a1a1a; color:#e94560; }
+.desc { color:#ccc; font-size:13px; margin:4px 0; }
+.links { margin-top:6px; font-size:12px; }
+.links a { color:#4ecdc4; margin-right:12px; text-decoration:none; }
+.links a:hover { text-decoration:underline; }
+a { color:#4ecdc4; }
+.toc { background:#0f3460; border-radius:6px; padding:12px 16px; margin-bottom:20px; font-size:13px; }
+.toc a { color:#a8dadc; text-decoration:none; margin-right:16px; white-space:nowrap; }
+.toc a:hover { color:#4ecdc4; }
+.count { color:#888; font-size:12px; }
+.nav { margin-bottom:16px; font-size:13px; }
+.nav a { color:#4ecdc4; text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="nav"><a href="/">&larr; Back to Phenology Explorer</a></div>
+
+<h1>Crop & Phenology Datasets Catalog</h1>
+<p class="subtitle">Open-access datasets for crop type mapping, phenology, and yield research. Compiled for the <a href="/">Phenology Explorer</a> tool.<br>
+Last updated: March 2026. <span class="count">35 datasets across 5 categories.</span></p>
+
+<div class="toc">
+  <b>Jump to:</b>
+  <a href="#crop-type">Crop Type / Land Use</a>
+  <a href="#phenology-ground">Phenology (Ground Truth)</a>
+  <a href="#phenology-satellite">Phenology (Satellite-derived)</a>
+  <a href="#yield">Crop Yield</a>
+  <a href="#benchmark">Benchmarks / ML-ready</a>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="crop-type">Crop Type / Land Use Classification</h2>
+<!-- ============================================================ -->
+
+<div class="card crop-type">
+  <div class="card-title"><a href="https://zenodo.org/records/15467063">Kenya Helmets Crop Type Dataset v2</a></div>
+  <div class="meta">D'Andrimont et al. (2025) &mdash; doi:10.5281/zenodo.15467063</div>
+  <span class="tag tag-region">Kenya (16 counties)</span>
+  <span class="tag tag-crop">Maize, beans, tea, sugarcane, +</span>
+  <span class="tag tag-year">2021&ndash;2022</span>
+  <span class="tag tag-format">CSV + imagery (14.9 GB)</span>
+  <span class="tag tag-license">CC-BY-SA 4.0</span>
+  <div class="desc">6,000+ georeferenced crop type points from helmet-mounted cameras + deep learning (Street2Sat). Roadside imagery with crop labels.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/15467063/files/Helmets_Kenya_v2.csv?download=1">Download CSV (3.8 MB)</a>
+    <a href="https://doi.org/10.1038/s41597-025-05762-7">Paper</a>
+  </div>
+</div>
+
+<div class="card crop-type">
+  <div class="card-title"><a href="https://zenodo.org/records/15702415">CropSight-US v1.0</a></div>
+  <div class="meta">Liu et al. (2025) &mdash; doi:10.5281/zenodo.15702415</div>
+  <span class="tag tag-region">USA (CONUS)</span>
+  <span class="tag tag-crop">17 types: corn, soy, wheat, cotton, alfalfa, +</span>
+  <span class="tag tag-year">2013&ndash;2023</span>
+  <span class="tag tag-format">ZIP (vector)</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">First national-scale object-based crop type ground truth for the US. 124K cropland fields from Google Street View + Sentinel-2. 97.2% accuracy.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/15702415">Download (Zenodo)</a>
+    <a href="https://github.com/rssiuiuc/CropSight">Code</a>
+    <a href="https://essd.copernicus.org/preprints/essd-2025-527/">Paper</a>
+  </div>
+</div>
+
+<div class="card crop-type">
+  <div class="card-title"><a href="https://zenodo.org/records/6937139">EuroCrops</a></div>
+  <div class="meta">Schneider et al. (2022) &mdash; doi:10.5281/zenodo.6937139</div>
+  <span class="tag tag-region">EU (multi-country)</span>
+  <span class="tag tag-crop">Harmonised HCAT taxonomy</span>
+  <span class="tag tag-year">Varies by country</span>
+  <span class="tag tag-format">GeoPackage / Shapefile</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">All publicly available self-declared crop reporting datasets from EU countries, harmonised with the Hierarchical Crop and Agriculture Taxonomy (HCAT).</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/6937139">Download (Zenodo)</a>
+    <a href="https://github.com/maja601/EuroCrops">GitHub</a>
+  </div>
+</div>
+
+<div class="card crop-type">
+  <div class="card-title"><a href="https://zenodo.org/records/10645427">Germany Crop Type Maps (2017&ndash;2023)</a></div>
+  <div class="meta">Th&uuml;nen Institute &mdash; Zenodo</div>
+  <span class="tag tag-region">Germany (national)</span>
+  <span class="tag tag-crop">Major arable crops</span>
+  <span class="tag tag-year">2017&ndash;2023</span>
+  <span class="tag tag-format">GeoTIFF + GeoPackage</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Annual national-scale crop type maps from Sentinel-1, Sentinel-2, and Landsat time series. Both raster and vector versions available.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/17135735">2023 (vector)</a>
+    <a href="https://zenodo.org/records/10645427">2022 (raster)</a>
+    <a href="https://zenodo.org/records/10640528">2017&ndash;2021</a>
+  </div>
+</div>
+
+<div class="card crop-type">
+  <div class="card-title"><a href="https://zenodo.org/records/13984185">Argentina National Crop Map 2023/2024</a></div>
+  <div class="meta">Zenodo &mdash; doi:10.5281/zenodo.13984185</div>
+  <span class="tag tag-region">Argentina</span>
+  <span class="tag tag-crop">Soy, maize, wheat, sunflower, +</span>
+  <span class="tag tag-year">2023&ndash;2024</span>
+  <span class="tag tag-format">Raster</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">National crop type map from supervised classification of Landsat + Sentinel-2 imagery for the 2023/2024 growing season.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/13984185">Download (Zenodo)</a>
+  </div>
+</div>
+
+<div class="card crop-type">
+  <div class="card-title"><a href="https://zenodo.org/records/6376160">France &amp; Kenya Crop Classification (Domain Adaptation)</a></div>
+  <div class="meta">Zenodo &mdash; doi:10.5281/zenodo.6376160</div>
+  <span class="tag tag-region">France + Kenya</span>
+  <span class="tag tag-crop">Multiple crop types</span>
+  <span class="tag tag-year">2017</span>
+  <span class="tag tag-format">CSV (S2 features)</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Processed crop type datasets with 70 Sentinel-2 features per point. Designed for testing domain adaptation methods across continents.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/6376160">Download (Zenodo)</a>
+  </div>
+</div>
+
+<div class="card crop-type">
+  <div class="card-title"><a href="https://doi.org/10.6084/m9.figshare.22491997">CROPGRIDS &mdash; Global 173-crop Dataset</a></div>
+  <div class="meta">Siebert et al. (2024) &mdash; Scientific Data</div>
+  <span class="tag tag-region">Global (0.05&deg;)</span>
+  <span class="tag tag-crop">173 crop types</span>
+  <span class="tag tag-year">~2020</span>
+  <span class="tag tag-format">NetCDF / GeoTIFF</span>
+  <span class="tag tag-license">CC-BY 4.0</span>
+  <div class="desc">Global geo-referenced crop area dataset for 173 crops at ~5.6 km resolution. Combines census, survey, and satellite data.</div>
+  <div class="links">
+    <a href="https://doi.org/10.6084/m9.figshare.22491997">Download (Figshare)</a>
+    <a href="https://doi.org/10.1038/s41597-024-03247-7">Paper</a>
+  </div>
+</div>
+
+<div class="card crop-type">
+  <div class="card-title"><a href="https://zenodo.org/records/13836971">ECIRA &mdash; European Crop-Specific Irrigated Areas</a></div>
+  <div class="meta">Zenodo &mdash; doi:10.5281/zenodo.13836971</div>
+  <span class="tag tag-region">Europe (28 countries)</span>
+  <span class="tag tag-crop">16 crop types, irrigated vs rainfed</span>
+  <span class="tag tag-year">2010&ndash;2020</span>
+  <span class="tag tag-format">GeoTIFF (1 km)</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">1 km gridded European crop-specific irrigated and rainfed areas distinguishing 16 crop types across 28 countries.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/13836971">Download (Zenodo)</a>
+  </div>
+</div>
+
+<div class="card crop-type">
+  <div class="card-title"><a href="https://environment.data.gov.uk/spatialdata/crop-map-of-england">CROME &mdash; Crop Map of England</a></div>
+  <div class="meta">Defra / Environment Agency (open data)</div>
+  <span class="tag tag-region">England</span>
+  <span class="tag tag-crop">80+ land use categories (arable, grassland, woodland, +)</span>
+  <span class="tag tag-year">2017&ndash;2024</span>
+  <span class="tag tag-format">GDB / GeoJSON / PMTiles</span>
+  <span class="tag tag-license">OGL v3</span>
+  <div class="desc">Annual parcel-level crop type map of England from Sentinel-1/2 classification. 31M+ hexagonal cells with crop probability scores. Available as vector tiles.</div>
+  <div class="links">
+    <a href="https://environment.data.gov.uk/spatialdata/crop-map-of-england">Data portal</a>
+  </div>
+</div>
+
+<div class="card crop-type">
+  <div class="card-title"><a href="https://nassgeodata.gmu.edu/CropScape/">USDA CDL &mdash; Cropland Data Layer</a></div>
+  <div class="meta">USDA NASS (annual release)</div>
+  <span class="tag tag-region">USA (CONUS, 30 m)</span>
+  <span class="tag tag-crop">254 crop/land cover classes</span>
+  <span class="tag tag-year">2008&ndash;present</span>
+  <span class="tag tag-format">GeoTIFF (30 m)</span>
+  <span class="tag tag-license">Open (public domain)</span>
+  <div class="desc">National crop-specific land cover classification from Landsat, DEIMOS-1, and ground truth. 85%+ accuracy for major crops. CropScape web interface for browsing.</div>
+  <div class="links">
+    <a href="https://nassgeodata.gmu.edu/CropScape/">CropScape viewer</a>
+    <a href="https://www.nass.usda.gov/Research_and_Science/Cropland/Release/">Download</a>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="phenology-ground">Phenology (Ground Truth / In-situ)</h2>
+<!-- ============================================================ -->
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://doi.org/10.1016/j.compag.2022.106882">FlevoVision &mdash; Crop BBCH Phenology (Netherlands)</a></div>
+  <div class="meta">D'Andrimont et al. (2022)</div>
+  <span class="tag tag-region">Flevoland, Netherlands</span>
+  <span class="tag tag-crop">Wheat, sugar beet, maize, potato, onion, +</span>
+  <span class="tag tag-year">2018</span>
+  <span class="tag tag-format">CSV (with WKB geometry)</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">259 crop sites with BBCH ground truth phenology stages (0&ndash;99). Multiple observations per site across the growing season. Integrated in our tool.</div>
+  <div class="links">
+    <a href="https://doi.org/10.1016/j.compag.2022.106882">Paper</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://opendata.dwd.de/climate_environment/CDC/observations_germany/phenology/">DWD Germany &mdash; Crop Phenology Observations</a></div>
+  <div class="meta">Deutscher Wetterdienst (open data, no login)</div>
+  <span class="tag tag-region">Germany (1200+ stations)</span>
+  <span class="tag tag-crop">Wheat, maize, barley, rapeseed, oats, sugar beet, potato</span>
+  <span class="tag tag-year">1951&ndash;present</span>
+  <span class="tag tag-format">TXT (semicolon-delimited, latin-1)</span>
+  <span class="tag tag-license">Open (DL-DE/BY-2.0)</span>
+  <div class="desc">160 phenophases of crops, fruit, and wild plants from ~1200 volunteer observer stations. Sowing, emergence, heading, flowering, harvest dates. Integrated in our tool.</div>
+  <div class="links">
+    <a href="https://opendata.dwd.de/climate_environment/CDC/observations_germany/phenology/annual_reporters/crops/recent/">Download recent</a>
+    <a href="https://opendata.dwd.de/climate_environment/CDC/observations_germany/phenology/annual_reporters/crops/historical/">Download historical</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="http://pep725.eu/">PEP725 &mdash; Pan European Phenological Database</a></div>
+  <div class="meta">pep725.eu (free registration required)</div>
+  <span class="tag tag-region">Europe (46 countries)</span>
+  <span class="tag tag-crop">265 plant species incl. wheat, maize, potato, beet</span>
+  <span class="tag tag-year">1868&ndash;present</span>
+  <span class="tag tag-format">CSV</span>
+  <span class="tag tag-license">Free (registration)</span>
+  <div class="desc">13M+ phenological records. Largest European phenology database. Crops, fruit trees, and wild plants. BBCH-coded observations.</div>
+  <div class="links">
+    <a href="http://pep725.eu/data_download/registration.php">Register &amp; download</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://doi.org/10.3334/ORNLDAAC/2389">PhenoCam v3.0 &mdash; Camera-derived Vegetation Phenology</a></div>
+  <div class="meta">PhenoCam Network / ORNL DAAC (2000&ndash;2023)</div>
+  <span class="tag tag-region">N. America + global (738 sites)</span>
+  <span class="tag tag-crop">Agriculture, grassland, forest, shrubland</span>
+  <span class="tag tag-year">2000&ndash;2023</span>
+  <span class="tag tag-format">CSV (GCC time series)</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Canopy greenness (GCC) from automated cameras. 1-day and 3-day summaries. Transition dates for greenup, maturity, senescence, dormancy.</div>
+  <div class="links">
+    <a href="https://phenocam.nau.edu/webcam/network/siteinfo/">Site list</a>
+    <a href="https://doi.org/10.3334/ORNLDAAC/2389">ORNL DAAC</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://www.usanpn.org/data/observational">USA-NPN &mdash; National Phenology Network</a></div>
+  <div class="meta">Nature's Notebook (free API)</div>
+  <span class="tag tag-region">USA</span>
+  <span class="tag tag-crop">Apple, wheat, maize, maple, elm, 1000+ species</span>
+  <span class="tag tag-year">2009&ndash;present</span>
+  <span class="tag tag-format">JSON / CSV (API)</span>
+  <span class="tag tag-license">Open (CC0)</span>
+  <div class="desc">Citizen science phenology network. Flowering, leafout, fruiting dates. REST API for programmatic access.</div>
+  <div class="links">
+    <a href="https://www.usanpn.org/data/observational">Data portal</a>
+    <a href="https://docs.google.com/document/d/1yNjupricKOAXn6tY1sI7-EwkcfwdGUZ7lxYv7fcPjO8/">API docs</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://doi.org/10.57760/sciencedb.28709">NE China Maize Phenology (1981&ndash;2024)</a></div>
+  <div class="meta">Ren et al. (2025) &mdash; Scientific Data</div>
+  <span class="tag tag-region">NE China (61 stations)</span>
+  <span class="tag tag-crop">Maize (10 phenological stages)</span>
+  <span class="tag tag-year">1981&ndash;2024</span>
+  <span class="tag tag-format">XLSX</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Sowing, emergence, three-leaf, seven-leaf, jointing, tasseling, flowering, silking, milking, maturity from 61 agrometeorological stations. Rigorous QC.</div>
+  <div class="links">
+    <a href="https://doi.org/10.57760/sciencedb.28709">Download (ScienceDB)</a>
+    <a href="https://doi.org/10.1038/s41597-025-06330-9">Paper</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://zenodo.org/records/8067432">In-situ Crop Phenology &mdash; Bulgaria &amp; France</a></div>
+  <div class="meta">SenSeCo project &mdash; Zenodo</div>
+  <span class="tag tag-region">Bulgaria + France</span>
+  <span class="tag tag-crop">Winter rapeseed, wheat</span>
+  <span class="tag tag-year">2018&ndash;2020</span>
+  <span class="tag tag-format">TXT / CSV</span>
+  <span class="tag tag-license">CC-BY 4.0</span>
+  <div class="desc">Field-level crop phenology measurements (sowing, phenophase dates, harvest) with georeferenced field boundaries. 17 production fields (BG) + 2 research fields (FR).</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/8067432">Download (Zenodo)</a>
+    <a href="https://zenodo.org/records/7825727">Companion S2 dataset</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://zenodo.org/records/15291023">Indian Agroecosystem Phenology &amp; Fluxes</a></div>
+  <div class="meta">Zenodo &mdash; doi:10.5281/zenodo.15291023</div>
+  <span class="tag tag-region">India</span>
+  <span class="tag tag-crop">Rice, wheat, maize (major agroecosystems)</span>
+  <span class="tag tag-year">Model output + obs</span>
+  <span class="tag tag-format">CSV / NetCDF</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">CLM5 model outputs + observational data (LAI, yield, dry matter, carbon fluxes) for major Indian crop systems.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/15291023">Download (Zenodo)</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://doi.org/10.1038/s41597-025-05368-z">China Winter Wheat Phenology (1981&ndash;2021)</a></div>
+  <div class="meta">Zhang et al. (2025) &mdash; Scientific Data</div>
+  <span class="tag tag-region">Huang-Huai-Hai Plain, China</span>
+  <span class="tag tag-crop">Winter wheat (9 stages)</span>
+  <span class="tag tag-year">1981&ndash;2021</span>
+  <span class="tag tag-format">JPG / XLSX</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Sowing, emergence, tillering, jointing, booting, heading, flowering, milking, maturity. Interannual trends from station observations. 60% of China's wheat output.</div>
+  <div class="links">
+    <a href="https://doi.org/10.1038/s41597-025-05368-z">Paper</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://doi.org/10.1111/j.1466-8238.2010.00551.x">SAGE Crop Calendars &mdash; Global Planting &amp; Harvest Dates</a></div>
+  <div class="meta">Sacks et al. (2010) &mdash; Global Ecology and Biogeography</div>
+  <span class="tag tag-region">Global (0.5&deg;)</span>
+  <span class="tag tag-crop">15 crops: wheat, maize, rice, soybean, barley, cotton, +</span>
+  <span class="tag tag-year">Climatological</span>
+  <span class="tag tag-format">NetCDF / JSON</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Global gridded planting and harvest dates (DOY) for 15 major crops at 0.5&deg; resolution. Widely used reference for crop calendar research.</div>
+  <div class="links">
+    <a href="https://sage.nelson.wisc.edu/data-and-models/datasets/crop-calendar-dataset/">SAGE website</a>
+    <a href="https://doi.org/10.1111/j.1466-8238.2010.00551.x">Paper</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://doi.org/10.5281/zenodo.18763008">GEOGLAM CM4EW &mdash; Sub-national Crop Calendars</a></div>
+  <div class="meta">GEOGLAM Crop Monitor for Early Warning</div>
+  <span class="tag tag-region">Global (929 sub-national regions)</span>
+  <span class="tag tag-crop">Major cereals, oilseeds, root crops</span>
+  <span class="tag tag-year">Current</span>
+  <span class="tag tag-format">JSON / CSV</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Sub-national crop calendars with 6 phenological phases: planting, vegetative, harvest, end-of-season, out-of-season, minimal production. Updated regularly.</div>
+  <div class="links">
+    <a href="https://cropmonitor.org/">Crop Monitor</a>
+    <a href="https://doi.org/10.5281/zenodo.18763008">Zenodo</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://cropcalendar.apps.fao.org/">FAO Crop Calendar</a></div>
+  <div class="meta">FAO (REST API)</div>
+  <span class="tag tag-region">Global (60 countries)</span>
+  <span class="tag tag-crop">400+ crops</span>
+  <span class="tag tag-year">Current</span>
+  <span class="tag tag-format">JSON (API)</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Planting and harvest windows per crop, country, and Agro-Ecological Zone. REST API for programmatic access in 6 languages.</div>
+  <div class="links">
+    <a href="https://cropcalendar.apps.fao.org/">Web interface</a>
+  </div>
+</div>
+
+<div class="card phenology">
+  <div class="card-title"><a href="https://www.icos-cp.eu/data-products">ICOS &mdash; European Ecosystem Phenology &amp; Fluxes</a></div>
+  <div class="meta">Integrated Carbon Observation System</div>
+  <span class="tag tag-region">Europe (80+ stations, 12 countries)</span>
+  <span class="tag tag-crop">Ecosystems incl. cropland</span>
+  <span class="tag tag-year">2018&ndash;present</span>
+  <span class="tag tag-format">CSV / NetCDF</span>
+  <span class="tag tag-license">CC-BY 4.0</span>
+  <div class="desc">Eddy covariance fluxes, meteorological observations, digital camera phenology from 80+ labelled ecosystem stations. Camera-derived canopy greenness tracks phenological events.</div>
+  <div class="links">
+    <a href="https://www.icos-cp.eu/data-products">Data portal</a>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="phenology-satellite">Phenology (Satellite-derived)</h2>
+<!-- ============================================================ -->
+
+<div class="card satellite">
+  <div class="card-title"><a href="https://lpdaac.usgs.gov/products/mcd12q2v061/">MODIS MCD12Q2 v6.1 &mdash; Global Land Surface Phenology</a></div>
+  <div class="meta">NASA LP DAAC (free Earthdata login)</div>
+  <span class="tag tag-region">Global (500 m)</span>
+  <span class="tag tag-crop">All vegetation</span>
+  <span class="tag tag-year">2001&ndash;present</span>
+  <span class="tag tag-format">HDF5 / GeoTIFF</span>
+  <span class="tag tag-license">Open (EOSDIS)</span>
+  <div class="desc">Yearly SOS, maturity, senescence, EOS from EVI2. Up to 2 growing cycles/year. Available on GEE as <code>MODIS/061/MCD12Q2</code>.</div>
+  <div class="links">
+    <a href="https://lpdaac.usgs.gov/products/mcd12q2v061/">LP DAAC</a>
+    <a href="https://developers.google.com/earth-engine/datasets/catalog/MODIS_061_MCD12Q2">Google Earth Engine</a>
+    <a href="https://appeears.earthdatacloud.nasa.gov/">AppEEARS</a>
+  </div>
+</div>
+
+<div class="card satellite">
+  <div class="card-title"><a href="https://doi.org/10.3334/ORNLDAAC/2248">HP-LSP &mdash; HLS + PhenoCam Land Surface Phenology</a></div>
+  <div class="meta">Tran et al. (2023) &mdash; ORNL DAAC</div>
+  <span class="tag tag-region">N. America (78 regions, 10x10 km)</span>
+  <span class="tag tag-crop">All vegetation types</span>
+  <span class="tag tag-year">2019&ndash;2020</span>
+  <span class="tag tag-format">COG (30 m)</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">30 m phenology from fused Harmonized Landsat + Sentinel-2, calibrated with PhenoCam GCC. 3-day gap-free EVI2 + 4 transition dates (&le;5 day accuracy).</div>
+  <div class="links">
+    <a href="https://doi.org/10.3334/ORNLDAAC/2248">Download (ORNL DAAC)</a>
+    <a href="https://doi.org/10.1038/s41597-023-02605-1">Paper</a>
+  </div>
+</div>
+
+<div class="card satellite">
+  <div class="card-title"><a href="https://www.nature.com/articles/s41597-025-05519-2">GDPD &mdash; Global Dryland Phenology Dataset</a></div>
+  <div class="meta">Scientific Data (2025)</div>
+  <span class="tag tag-region">Global drylands (88.4% coverage)</span>
+  <span class="tag tag-crop">All dryland vegetation</span>
+  <span class="tag tag-year">2001&ndash;2019</span>
+  <span class="tag tag-format">GeoTIFF (500 m)</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">SOS/EOS from MODIS NBAR EVI2 with dynamic amplitude thresholds. Validated against PhenoCam GCC (SOS r=0.88) and flux tower GPP (SOS r=0.96).</div>
+  <div class="links">
+    <a href="https://doi.org/10.1038/s41597-025-05519-2">Paper</a>
+  </div>
+</div>
+
+<div class="card satellite">
+  <div class="card-title"><a href="https://figshare.com/articles/dataset/Annual_dynamic_dataset_of_global_land_surface_phenology_from_AVHRR_data_using_multiple_phenology_retrieval_methods_for_the_period_1982_to_2018/20375394">Global AVHRR Phenology (1982&ndash;2018)</a></div>
+  <div class="meta">Figshare</div>
+  <span class="tag tag-region">Global</span>
+  <span class="tag tag-crop">All vegetation</span>
+  <span class="tag tag-year">1982&ndash;2018</span>
+  <span class="tag tag-format">GeoTIFF</span>
+  <span class="tag tag-license">CC-BY 4.0</span>
+  <div class="desc">SOS, maturity, senescence, EOS from AVHRR NDVI using 4 retrieval methods. Validated against USA-NPN, PEP725, and flux towers. 36+ year record.</div>
+  <div class="links">
+    <a href="https://figshare.com/articles/dataset/Annual_dynamic_dataset_of_global_land_surface_phenology_from_AVHRR_data_using_multiple_phenology_retrieval_methods_for_the_period_1982_to_2018/20375394">Download (Figshare)</a>
+  </div>
+</div>
+
+<div class="card satellite">
+  <div class="card-title"><a href="https://doi.org/10.6084/m9.figshare.8313530">ChinaCropPhen1km</a></div>
+  <div class="meta">Luo et al. (2020) &mdash; ESSD</div>
+  <span class="tag tag-region">China (1 km)</span>
+  <span class="tag tag-crop">Maize, rice, wheat</span>
+  <span class="tag tag-year">2000&ndash;2015</span>
+  <span class="tag tag-format">GeoTIFF</span>
+  <span class="tag tag-license">CC-BY 4.0</span>
+  <div class="desc">High-resolution crop phenological dataset for three staple crops in China. SOS, heading, maturity dates from MODIS + station calibration.</div>
+  <div class="links">
+    <a href="https://doi.org/10.6084/m9.figshare.8313530">Download (Figshare)</a>
+    <a href="https://essd.copernicus.org/preprints/essd-2019-110/">Paper</a>
+  </div>
+</div>
+
+<div class="card satellite">
+  <div class="card-title"><a href="https://essd.copernicus.org/articles/14/2851/2022/">China Maize Phenology 30m (1985&ndash;2020)</a></div>
+  <div class="meta">Niu et al. (2022) &mdash; ESSD</div>
+  <span class="tag tag-region">China (30 m)</span>
+  <span class="tag tag-crop">Maize</span>
+  <span class="tag tag-year">1985&ndash;2020</span>
+  <span class="tag tag-format">GeoTIFF</span>
+  <span class="tag tag-license">CC-BY 4.0</span>
+  <div class="desc">National maize phenology product at 30 m from all available Landsat imagery on Google Earth Engine.</div>
+  <div class="links">
+    <a href="https://doi.org/10.6084/m9.figshare.16437054">Download (Figshare)</a>
+    <a href="https://essd.copernicus.org/articles/14/2851/2022/">Paper</a>
+  </div>
+</div>
+
+<div class="card satellite">
+  <div class="card-title"><a href="https://land.copernicus.eu/en/products/vegetation/high-resolution-vegetation-phenology-and-productivity">Copernicus HR-VPP &mdash; European Sentinel-2 Phenology</a></div>
+  <div class="meta">Copernicus Land Monitoring Service / VITO</div>
+  <span class="tag tag-region">Europe (EEA-39, 10 m)</span>
+  <span class="tag tag-crop">All vegetation</span>
+  <span class="tag tag-year">2017&ndash;present</span>
+  <span class="tag tag-format">COG / WMS (10 m, dekadal)</span>
+  <span class="tag tag-license">Open (Copernicus)</span>
+  <div class="desc">13 phenological metrics from Sentinel-2: start/end of season, max date/value, season length, productivity (SPROD, PPI). Dekadal VI time series at 10 m.</div>
+  <div class="links">
+    <a href="https://land.copernicus.eu/en/products/vegetation/high-resolution-vegetation-phenology-and-productivity">Product page</a>
+    <a href="https://phenology.vgt.vito.be/wms">WMS endpoint</a>
+  </div>
+</div>
+
+<div class="card satellite">
+  <div class="card-title"><a href="https://www.usgs.gov/special-topics/monitoring-vegetation-drought-stress/science/eviirs-phenology">USGS eVIIRS &mdash; USA Vegetation Phenology</a></div>
+  <div class="meta">USGS Earth Resources Observation and Science</div>
+  <span class="tag tag-region">USA (CONUS + Alaska, 375 m)</span>
+  <span class="tag tag-crop">All vegetation</span>
+  <span class="tag tag-year">2021&ndash;present</span>
+  <span class="tag tag-format">GeoTIFF (375 m)</span>
+  <span class="tag tag-license">Open (public domain)</span>
+  <div class="desc">Start/end of season, max NDVI, duration, amplitude, time-integrated NDVI from VIIRS. Annual phenology metrics for the contiguous USA.</div>
+  <div class="links">
+    <a href="https://www.usgs.gov/special-topics/monitoring-vegetation-drought-stress/science/eviirs-phenology">Product page</a>
+  </div>
+</div>
+
+<div class="card satellite">
+  <div class="card-title"><a href="https://data.apps.fao.org/catalog/dataset/crop-pasture-phenology">FAO ASIS Crop/Pasture Phenology</a></div>
+  <div class="meta">FAO</div>
+  <span class="tag tag-region">Global</span>
+  <span class="tag tag-crop">Crops + pasture (2 seasons)</span>
+  <span class="tag tag-year">Ongoing</span>
+  <span class="tag tag-format">Raster (dekadal)</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Growing Seasons (SOS/MOS/EOS) and Progress of Seasons from NDVI long-term averages. Part of the Agricultural Stress Index System.</div>
+  <div class="links">
+    <a href="https://data.apps.fao.org/catalog/dataset/crop-pasture-phenology">FAO catalog</a>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="yield">Crop Yield</h2>
+<!-- ============================================================ -->
+
+<div class="card yield">
+  <div class="card-title"><a href="https://zenodo.org/records/17279151">CY-Bench &mdash; Subnational Crop Yield Benchmark</a></div>
+  <div class="meta">Paudel et al. (2025) &mdash; Wageningen + NASA GISS</div>
+  <span class="tag tag-region">Global (29 countries wheat, 38 maize)</span>
+  <span class="tag tag-crop">Wheat, maize</span>
+  <span class="tag tag-year">Multi-decadal</span>
+  <span class="tag tag-format">CSV</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Subnational yield statistics + weather, remote sensing, soil moisture, evapotranspiration predictors. Standardised benchmark for yield forecasting ML.</div>
+  <div class="links">
+    <a href="https://doi.org/10.5281/zenodo.11502142">Download (Zenodo)</a>
+    <a href="https://github.com/WUR-AI/AgML-CY-Bench">Code</a>
+    <a href="https://essd.copernicus.org/preprints/essd-2025-83/">Paper</a>
+  </div>
+</div>
+
+<div class="card yield">
+  <div class="card-title"><a href="https://doi.org/10.6084/m9.figshare.11903277">Global Historical Crop Yields (1981&ndash;2016)</a></div>
+  <div class="meta">Iizumi et al. (2020) &mdash; Scientific Data</div>
+  <span class="tag tag-region">Global (0.5&deg;)</span>
+  <span class="tag tag-crop">Maize, rice, wheat, soybean</span>
+  <span class="tag tag-year">1981&ndash;2016</span>
+  <span class="tag tag-format">NetCDF</span>
+  <span class="tag tag-license">CC-BY 4.0</span>
+  <div class="desc">Gridded global historical yields for 4 major crops. Combines FAO statistics with satellite-based crop calendars and weather data.</div>
+  <div class="links">
+    <a href="https://doi.org/10.6084/m9.figshare.11903277">Download (Figshare)</a>
+    <a href="https://doi.org/10.1038/s41597-020-0433-7">Paper</a>
+  </div>
+</div>
+
+<div class="card yield">
+  <div class="card-title"><a href="https://doi.org/10.6084/m9.figshare.17427674">Climate Change Impacts on Crop Yields (Projected)</a></div>
+  <div class="meta">Jagermeyr et al. (2022) &mdash; Scientific Data</div>
+  <span class="tag tag-region">Global (91 countries)</span>
+  <span class="tag tag-crop">Maize, rice, soybean, wheat</span>
+  <span class="tag tag-year">21st century projections</span>
+  <span class="tag tag-format">CSV / NetCDF</span>
+  <span class="tag tag-license">CC-BY 4.0</span>
+  <div class="desc">Projected yields under major emission scenarios from multiple crop models. Country-level impacts for 4 major crops.</div>
+  <div class="links">
+    <a href="https://doi.org/10.6084/m9.figshare.17427674">Download (Figshare)</a>
+    <a href="https://doi.org/10.1038/s41597-022-01150-7">Paper</a>
+  </div>
+</div>
+
+<div class="card yield">
+  <div class="card-title"><a href="https://zenodo.org/records/7360753">ChinaWheatYield30m (2016&ndash;2021)</a></div>
+  <div class="meta">Zenodo &mdash; doi:10.5281/zenodo.7360753</div>
+  <span class="tag tag-region">China (30 m)</span>
+  <span class="tag tag-crop">Winter wheat</span>
+  <span class="tag tag-year">2016&ndash;2021</span>
+  <span class="tag tag-format">GeoTIFF</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">30 m annual winter wheat yield dataset for major producing provinces in China. High-resolution yield mapping.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/7360753">Download (Zenodo)</a>
+  </div>
+</div>
+
+<div class="card yield">
+  <div class="card-title"><a href="https://doi.org/10.1038/s41597-025-06528-x">UK Crop Yield Dataset</a></div>
+  <div class="meta">Scientific Data (2025)</div>
+  <span class="tag tag-region">UK</span>
+  <span class="tag tag-crop">Multiple arable crops</span>
+  <span class="tag tag-year">Multi-year</span>
+  <span class="tag tag-format">CSV</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Comprehensive UK crop yield dataset incorporating satellite (Sentinel, MODIS), weather, and soil type information.</div>
+  <div class="links">
+    <a href="https://doi.org/10.1038/s41597-025-06528-x">Paper &amp; data</a>
+  </div>
+</div>
+
+<div class="card yield">
+  <div class="card-title"><a href="https://zenodo.org/records/10510934">ACEA &mdash; Global Gridded Crop Model</a></div>
+  <div class="meta">Zenodo</div>
+  <span class="tag tag-region">Global</span>
+  <span class="tag tag-crop">Multiple crops</span>
+  <span class="tag tag-year">Historical + projected</span>
+  <span class="tag tag-format">NetCDF</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">AquaCrop-Earth@lternatives: global gridded crop model estimating yield and ET, distinguishing green water, blue water from capillary rise, and irrigation.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/10510934">Download (Zenodo)</a>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="benchmark">Benchmarks / ML-ready Datasets</h2>
+<!-- ============================================================ -->
+
+<div class="card benchmark">
+  <div class="card-title"><a href="https://zenodo.org/records/10629610">EuroCropsML</a></div>
+  <div class="meta">Schneider et al. (2025) &mdash; Scientific Data</div>
+  <span class="tag tag-region">Latvia, Portugal, Estonia</span>
+  <span class="tag tag-crop">176 crop classes (HCAT taxonomy)</span>
+  <span class="tag tag-year">2021</span>
+  <span class="tag tag-format">Parquet / CSV</span>
+  <span class="tag tag-size">706K parcels</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">ML benchmark for few-shot crop type classification. Full-year S2 L1C time series (per-parcel median), 13 spectral bands, geo-coords. Ready for PyTorch.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/10629610">Download (Zenodo)</a>
+    <a href="https://doi.org/10.1038/s41597-025-04952-7">Paper</a>
+  </div>
+</div>
+
+<div class="card benchmark">
+  <div class="card-title"><a href="https://zenodo.org/records/5533193">CropHarvest &mdash; Global Crop Type Classification</a></div>
+  <div class="meta">Tseng et al. (2021) &mdash; NeurIPS Datasets &amp; Benchmarks</div>
+  <span class="tag tag-region">Global (20 source datasets)</span>
+  <span class="tag tag-crop">Binary crop/non-crop + multiclass</span>
+  <span class="tag tag-year">Multi-year</span>
+  <span class="tag tag-format">Custom (Python API)</span>
+  <span class="tag tag-size">95K datapoints</span>
+  <span class="tag tag-license">CC-BY-SA 4.0</span>
+  <div class="desc">95,186 geo-diverse samples (33K multiclass) with S1, S2, SRTM, ERA5 features. Aggregates 21 datasets. Benchmark + Python package.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/5533193">Download (Zenodo)</a>
+    <a href="https://github.com/nasaharvest/cropharvest">GitHub</a>
+    <a href="https://datasets-benchmarks-proceedings.neurips.cc/paper/2021/hash/54229abfcfa5649e7003b83dd4755294-Abstract-round2.html">Paper</a>
+  </div>
+</div>
+
+<div class="card benchmark">
+  <div class="card-title"><a href="https://www.tandfonline.com/doi/full/10.1080/20964471.2025.2512685">DACIA5 &mdash; Sentinel-1/2 Crop ID (Romania)</a></div>
+  <div class="meta">2025</div>
+  <span class="tag tag-region">Romania (Bra&#537;ov)</span>
+  <span class="tag tag-crop">Multiple crop types</span>
+  <span class="tag tag-year">2020&ndash;2024</span>
+  <span class="tag tag-format">GeoTIFF patches</span>
+  <span class="tag tag-size">6,454 image patches</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">172 Sentinel-2 multispectral + 159 Sentinel-1 radar images with in-situ verified crop labels. Designed for domain adaptation benchmarks.</div>
+  <div class="links">
+    <a href="https://www.tandfonline.com/doi/full/10.1080/20964471.2025.2512685">Paper &amp; data</a>
+  </div>
+</div>
+
+<div class="card benchmark">
+  <div class="card-title"><a href="https://zenodo.org/records/4680394">Hand-Labelled Crop/Non-Crop (Africa)</a></div>
+  <div class="meta">Zenodo &mdash; doi:10.5281/zenodo.4680394</div>
+  <span class="tag tag-region">Ethiopia, Sudan, Togo, Kenya</span>
+  <span class="tag tag-crop">Binary crop / non-crop</span>
+  <span class="tag tag-year">Various</span>
+  <span class="tag tag-format">GeoJSON / CSV</span>
+  <span class="tag tag-license">Open</span>
+  <div class="desc">Hand-labelled crop/non-crop reference data for African countries. Useful for training binary cropland classifiers.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/4680394">Download (Zenodo)</a>
+  </div>
+</div>
+
+<div class="card benchmark">
+  <div class="card-title"><a href="https://zenodo.org/records/7825727">SenSeCo S2 Phenology Metrics &mdash; Bulgaria &amp; France</a></div>
+  <div class="meta">Zenodo</div>
+  <span class="tag tag-region">Bulgaria + France</span>
+  <span class="tag tag-crop">Winter rapeseed, wheat</span>
+  <span class="tag tag-year">2018&ndash;2020</span>
+  <span class="tag tag-format">GeoTIFF / CSV</span>
+  <span class="tag tag-license">CC-BY 4.0</span>
+  <div class="desc">Sentinel-2 time series for phenology metric extraction. Paired with in-situ crop phenology ground truth (see above). Benchmark for RS phenology methods.</div>
+  <div class="links">
+    <a href="https://zenodo.org/records/7825727">Download (Zenodo)</a>
+    <a href="https://zenodo.org/records/8067432">In-situ companion</a>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<div style="margin-top:32px; padding-top:16px; border-top:1px solid #333; font-size:11px; color:#666;">
+  <p>This catalog focuses on openly available datasets useful for crop phenology, type classification, and yield research.
+  Many more datasets exist &mdash; see also
+  <a href="https://github.com/Agri-Hub/Callisto-Dataset-Collection">Callisto Collection</a>,
+  <a href="https://github.com/satellite-image-deep-learning/datasets">satellite-image-deep-learning/datasets</a>, and
+  <a href="https://lacunafund.org/datasets/agriculture/">Lacuna Fund agriculture datasets</a>.
+  </p>
+  <p style="margin-top:6px">Generated for the <a href="/">Phenology Explorer</a> project.</p>
+</div>
+
+</div>
+</body>
+</html>
