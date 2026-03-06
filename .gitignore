@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Environments
+.venv/
+env/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Data (large files)
+*.tif
+*.tiff
+*.nc
+*.hdf
+*.h5
+*.zip
+*.JPG
+*.jpg
+*.npz
+
+# Keep the FlevoVision metadata CSV (tracked)
+!data/flevovision/tf_flevo_toshare.csv
+
+# EuroCropsML extracted data
+data/eurocropsml/raw_data/
+data/eurocropsml/preprocess/
+data/eurocropsml/split/
+
+# FlevoVision images
+data/flevovision/training/
