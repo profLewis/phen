@@ -23,24 +23,5 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Data (large files)
-*.tif
-*.tiff
-*.nc
-*.hdf
-*.h5
-*.zip
-*.JPG
-*.jpg
-*.npz
-
-# Keep the FlevoVision metadata CSV (tracked)
-!data/flevovision/tf_flevo_toshare.csv
-
-# EuroCropsML extracted data
-data/eurocropsml/raw_data/
-data/eurocropsml/preprocess/
-data/eurocropsml/split/
-
-# FlevoVision images
-data/flevovision/training/
+# Data (all datasets downloaded at runtime, not stored in git)
+data/
