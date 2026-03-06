@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phenology Explorer</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, system-ui, sans-serif; font-size:13px; background:#1a1a2e; color:#e0e0e0; }
+.layout { display:flex; height:100vh; }
+.sidebar { width:320px; min-width:320px; padding:12px; overflow-y:auto; background:#16213e; border-right:1px solid #333; }
+.main { flex:1; display:flex; flex-direction:column; }
+#map { height:40%; min-height:200px; }
+.charts { flex:1; overflow-y:auto; padding:8px; }
+h1 { font-size:16px; margin-bottom:8px; color:#a8dadc; }
+h2 { font-size:13px; margin:10px 0 4px; color:#a8dadc; }
+label { display:block; margin:3px 0 1px; font-size:11px; color:#999; }
+select, input[type=number], input[type=text] {
+  width:100%; padding:4px 6px; margin-bottom:4px; background:#0f3460; border:1px solid #444;
+  color:#e0e0e0; border-radius:3px; font-size:12px;
+}
+input[type=range] { width:100%; margin:2px 0; }
+.range-val { font-size:11px; color:#888; text-align:right; }
+button {
+  width:100%; padding:8px; margin:8px 0 4px; background:#e94560; color:white;
+  border:none; border-radius:4px; cursor:pointer; font-size:13px; font-weight:600;
+}
+button:hover { background:#c81e45; }
+button:disabled { background:#555; cursor:wait; }
+.status { font-size:11px; padding:4px; background:#0a0a1a; border-radius:3px;
+  margin:4px 0; min-height:20px; color:#4ecdc4; white-space:pre-wrap; }
+.coords { font-size:12px; color:#f1c40f; margin:4px 0; }
+.loc-list { max-height:150px; overflow-y:auto; font-size:11px; }
+.loc-item { padding:2px 4px; cursor:pointer; border-radius:2px; }
+.loc-item:hover { background:#0f3460; }
+.chart-box { background:#16213e; border-radius:6px; margin-bottom:8px; padding:4px; }
+.legend { font-size:10px; color:#999; padding:2px 8px; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <h1>Phenology Explorer</h1>
+    <p style="font-size:11px;color:#888;margin-bottom:8px">Click map or select a FlevoVision site to extract Sentinel-2 phenology.</p>
+
+    <div class="coords" id="coordsDisplay">No pixel selected</div>
+
+    <h2>Date Range</h2>
+    <label>Start</label>
+    <input type="text" id="startDate" value="2018-01-01">
+    <label>End</label>
+    <input type="text" id="endDate" value="2018-12-31">
+
+    <h2>Pixel Window</h2>
+    <label>Size (pixels, 10m bands)</label>
+    <select id="windowSize">
+      <option value="1">1×1 (single pixel)</option>
+      <option value="3" selected>3×3 (30m)</option>
+      <option value="5">5×5 (50m)</option>
+    </select>
+
+    <h2>Smoothing</h2>
+    <label>Method</label>
+    <select id="smoothMethod">
+      <option value="savgol">Savitzky-Golay</option>
+      <option value="dct">DCT / Garcia (2010)</option>
+    </select>
+    <div id="sgParams">
+      <label>SG Window <span class="range-val" id="sgWinVal">31</span></label>
+      <input type="range" id="sgWindow" min="5" max="61" step="2" value="31">
+      <label>SG Polynomial Order</label>
+      <select id="sgPoly"><option>2</option><option selected>3</option><option>4</option></select>
+    </div>
+    <div id="dctParams" style="display:none">
+      <label>DCT smoothing (blank=auto GCV)</label>
+      <input type="number" id="dctS" placeholder="auto" step="0.1">
+    </div>
+
+    <h2>Phenology Method</h2>
+    <select id="phenoMethod">
+      <option value="amplitude_threshold">Amplitude Threshold (20%)</option>
+      <option value="first_derivative">First Derivative (max/min)</option>
+      <option value="second_derivative">Second Derivative (inflection)</option>
+    </select>
+    <div id="threshDiv">
+      <label>Threshold <span class="range-val" id="threshVal">0.20</span></label>
+      <input type="range" id="threshold" min="0.05" max="0.5" step="0.05" value="0.2">
+    </div>
+
+    <button id="extractBtn" onclick="doExtract()">Extract & Analyse</button>
+    <div class="status" id="status">Ready</div>
+
+    <h2>FlevoVision Sites</h2>
+    <div class="loc-list" id="locList">Loading...</div>
+  </div>
+
+  <div class="main">
+    <div id="map"></div>
+    <div class="charts">
+      <div class="chart-box" id="ndviChart" style="height:280px"></div>
+      <div class="chart-box" id="bandChart" style="height:220px"></div>
+      <div class="legend" id="phenoInfo"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- Map ---
+const map = L.map('map').setView([52.6, 5.7], 11);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19, attribution: '&copy; OSM'
+}).addTo(map);
+
+// Satellite layer
+const sat = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom: 19, attribution: 'Esri'}
+);
+L.control.layers({'OSM': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map), 'Satellite': sat}).addTo(map);
+
+let marker = null;
+let selectedLon = null, selectedLat = null;
+
+map.on('click', function(e) {
+  selectPixel(e.latlng.lng, e.latlng.lat);
+});
+
+function selectPixel(lon, lat) {
+  selectedLon = lon;
+  selectedLat = lat;
+  if (marker) map.removeLayer(marker);
+  marker = L.marker([lat, lon], {
+    icon: L.divIcon({className:'', html:'<div style="width:12px;height:12px;background:#e94560;border:2px solid white;border-radius:50%;margin:-6px"></div>'})
+  }).addTo(map);
+  document.getElementById('coordsDisplay').textContent =
+    `Selected: ${lat.toFixed(5)}°N, ${lon.toFixed(5)}°E`;
+}
+
+// --- FlevoVision locations ---
+const locMarkers = L.layerGroup().addTo(map);
+fetch('/api/flevovision_locations')
+  .then(r => r.json())
+  .then(locs => {
+    const list = document.getElementById('locList');
+    list.innerHTML = '';
+    locs.forEach(loc => {
+      // Map marker
+      const m = L.circleMarker([loc.lat, loc.lon], {
+        radius: 4, color: '#4ecdc4', fillOpacity: 0.6, weight: 1
+      }).bindTooltip(`${loc.code} (${loc.id})`);
+      m.on('click', () => selectPixel(loc.lon, loc.lat));
+      locMarkers.addLayer(m);
+      // Sidebar entry
+      const div = document.createElement('div');
+      div.className = 'loc-item';
+      div.textContent = `${loc.code} (${loc.id})`;
+      div.onclick = () => { selectPixel(loc.lon, loc.lat); map.setView([loc.lat, loc.lon], 14); };
+      list.appendChild(div);
+    });
+  });
+
+// --- UI toggles ---
+document.getElementById('smoothMethod').onchange = function() {
+  document.getElementById('sgParams').style.display = this.value === 'savgol' ? '' : 'none';
+  document.getElementById('dctParams').style.display = this.value === 'dct' ? '' : 'none';
+};
+document.getElementById('sgWindow').oninput = function() {
+  document.getElementById('sgWinVal').textContent = this.value;
+};
+document.getElementById('threshold').oninput = function() {
+  document.getElementById('threshVal').textContent = parseFloat(this.value).toFixed(2);
+};
+document.getElementById('phenoMethod').onchange = function() {
+  document.getElementById('threshDiv').style.display =
+    this.value === 'amplitude_threshold' ? '' : 'none';
+};
+
+// --- Extract ---
+function doExtract() {
+  if (!selectedLon || !selectedLat) {
+    document.getElementById('status').textContent = 'Click the map first to select a pixel.';
+    return;
+  }
+  const btn = document.getElementById('extractBtn');
+  btn.disabled = true;
+  btn.textContent = 'Extracting...';
+  const status = document.getElementById('status');
+  status.textContent = 'Querying STAC and reading COGs...';
+
+  const dctS = document.getElementById('dctS').value;
+  const body = {
+    lon: selectedLon, lat: selectedLat,
+    start_date: document.getElementById('startDate').value,
+    end_date: document.getElementById('endDate').value,
+    smooth_method: document.getElementById('smoothMethod').value,
+    sg_window: parseInt(document.getElementById('sgWindow').value),
+    sg_poly: parseInt(document.getElementById('sgPoly').value),
+    dct_s: dctS ? parseFloat(dctS) : null,
+    pheno_method: document.getElementById('phenoMethod').value,
+    threshold: parseFloat(document.getElementById('threshold').value),
+    window_size: parseInt(document.getElementById('windowSize').value),
+  };
+
+  fetch('/api/extract', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  })
+  .then(r => r.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.textContent = 'Extract & Analyse';
+    if (data.error) {
+      status.textContent = 'Error: ' + data.error;
+      return;
+    }
+    status.textContent = `${data.n_scenes} scenes, ${data.n_clear} clear obs`;
+    plotResults(data, body.smooth_method);
+  })
+  .catch(err => {
+    btn.disabled = false;
+    btn.textContent = 'Extract & Analyse';
+    status.textContent = 'Error: ' + err;
+  });
+}
+
+// --- Plotting ---
+const SCL_COLORS = {
+  0:'#333', 1:'#ff0000', 2:'#555', 3:'#ff8c00', 4:'#2ecc71',
+  5:'#e67e22', 6:'#3498db', 7:'#95a5a6', 8:'#e74c3c',
+  9:'#c0392b', 10:'#dda0dd', 11:'#ecf0f1'
+};
+const SCL_NAMES = {
+  0:'nodata',1:'saturated',2:'dark',3:'shadow',4:'vegetation',
+  5:'bare_soil',6:'water',7:'unclassified',8:'cloud_med',
+  9:'cloud_high',10:'cirrus',11:'snow'
+};
+
+function plotResults(data, smoothMethod) {
+  const raw = data.raw;
+  // NDVI scatter colored by SCL
+  const doys = raw.filter(r=>r.ndvi!==null).map(r=>r.doy);
+  const ndvis = raw.filter(r=>r.ndvi!==null).map(r=>r.ndvi);
+  const colors = raw.filter(r=>r.ndvi!==null).map(r=>SCL_COLORS[r.scl]||'#888');
+  const labels = raw.filter(r=>r.ndvi!==null).map(r=>
+    `${r.date} SCL=${r.scl} (${SCL_NAMES[r.scl]||'?'}) cloud=${r.cloud_cover?.toFixed(0)}%`
+  );
+
+  const traces = [{
+    x: doys, y: ndvis, mode:'markers', type:'scatter',
+    marker:{color:colors, size:6, line:{color:'#fff',width:0.5}},
+    text: labels, name:'NDVI (all obs)',
+  }];
+
+  // Smoothed curve
+  if (data.smoothed) {
+    traces.push({
+      x: data.smoothed.t, y: data.smoothed.y,
+      mode:'lines', line:{color:'#f1c40f', width:2},
+      name: smoothMethod === 'dct' ? 'DCT smooth' : 'Savitzky-Golay',
+    });
+  }
+
+  // Double logistic fit
+  if (data.double_logistic) {
+    traces.push({
+      x: data.double_logistic.t, y: data.double_logistic.y,
+      mode:'lines', line:{color:'#e94560', width:2, dash:'dot'},
+      name:'Double logistic fit',
+    });
+  }
+
+  // Phenometric markers
+  const shapes = [];
+  const annots = [];
+  if (data.phenometrics) {
+    const pm = data.phenometrics;
+    [{key:'SOS',color:'#2ecc71',label:'SOS'},{key:'POS',color:'#3498db',label:'POS'},{key:'EOS',color:'#e67e22',label:'EOS'}]
+    .forEach(({key,color,label}) => {
+      if (pm[key]) {
+        shapes.push({type:'line',x0:pm[key],x1:pm[key],y0:-0.2,y1:1,
+          line:{color,width:2,dash:'dash'}});
+        annots.push({x:pm[key],y:1.02,text:label+' '+Math.round(pm[key]),
+          showarrow:false,font:{size:10,color}});
+      }
+    });
+  }
+
+  Plotly.newPlot('ndviChart', traces, {
+    title:{text:'NDVI Time Series & Phenology', font:{size:13,color:'#a8dadc'}},
+    xaxis:{title:'Day of Year',range:[1,365],color:'#888',gridcolor:'#333'},
+    yaxis:{title:'NDVI',range:[-0.2,1],color:'#888',gridcolor:'#333'},
+    paper_bgcolor:'#16213e', plot_bgcolor:'#0f3460',
+    legend:{font:{size:10,color:'#ccc'},bgcolor:'rgba(0,0,0,0.3)'},
+    shapes, annotations: annots, margin:{t:40,b:40,l:50,r:20},
+  }, {responsive:true});
+
+  // Phenometrics info
+  const info = document.getElementById('phenoInfo');
+  if (data.phenometrics) {
+    const pm = data.phenometrics;
+    info.innerHTML = `<b>Phenometrics (${pm.method}):</b> `
+      + `SOS=${pm.SOS?Math.round(pm.SOS):'N/A'} `
+      + `POS=${pm.POS?Math.round(pm.POS):'N/A'} `
+      + `EOS=${pm.EOS?Math.round(pm.EOS):'N/A'} `
+      + `Amplitude=${pm.amplitude?.toFixed(3)}`;
+  }
+
+  // Band chart (RGB + NIR for clear obs)
+  const clear = raw.filter(r => r.is_clear && r.B04 !== null);
+  if (clear.length > 0) {
+    const cdoys = clear.map(r=>r.doy);
+    const bandTraces = [
+      {x:cdoys, y:clear.map(r=>r.B02/10000), name:'B02 Blue', line:{color:'#3498db'}},
+      {x:cdoys, y:clear.map(r=>r.B03/10000), name:'B03 Green', line:{color:'#2ecc71'}},
+      {x:cdoys, y:clear.map(r=>r.B04/10000), name:'B04 Red', line:{color:'#e74c3c'}},
+      {x:cdoys, y:clear.map(r=>r.B08/10000), name:'B08 NIR', line:{color:'#9b59b6'}},
+    ].map(t => ({...t, mode:'lines+markers', marker:{size:3}}));
+
+    Plotly.newPlot('bandChart', bandTraces, {
+      title:{text:'Spectral Bands (clear obs only)', font:{size:13,color:'#a8dadc'}},
+      xaxis:{title:'Day of Year',range:[1,365],color:'#888',gridcolor:'#333'},
+      yaxis:{title:'Reflectance',color:'#888',gridcolor:'#333'},
+      paper_bgcolor:'#16213e', plot_bgcolor:'#0f3460',
+      legend:{font:{size:10,color:'#ccc'},bgcolor:'rgba(0,0,0,0.3)'},
+      margin:{t:40,b:40,l:50,r:20},
+    }, {responsive:true});
+  }
+}
+</script>
+</body>
+</html>
