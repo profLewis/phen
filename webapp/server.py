@@ -494,6 +494,11 @@ def datasets_page():
     return render_template("datasets.html")
 
 
+@app.route("/datasets/analysis")
+def datasets_analysis_page():
+    return render_template("datasets_analysis.html")
+
+
 @app.route("/api/extract", methods=["POST"])
 def api_extract():
     """Stream extraction progress and results as NDJSON."""

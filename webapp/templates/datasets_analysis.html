@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dataset Validation Analysis</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, system-ui, 'Segoe UI', sans-serif; font-size:14px;
+       background:#1a1a2e; color:#e0e0e0; line-height:1.6; }
+.container { max-width:1200px; margin:0 auto; padding:20px; }
+h1 { color:#a8dadc; font-size:24px; margin-bottom:4px; }
+h2 { color:#e94560; font-size:18px; margin:32px 0 10px; padding-bottom:6px;
+     border-bottom:1px solid #333; }
+h3 { color:#a8dadc; font-size:15px; margin:20px 0 8px; }
+.subtitle { color:#888; font-size:13px; margin-bottom:24px; }
+.subtitle a { color:#4ecdc4; }
+a { color:#4ecdc4; }
+.nav { margin-bottom:16px; font-size:13px; }
+.nav a { color:#4ecdc4; text-decoration:none; margin-right:16px; }
+
+.chart-container { background:#16213e; border-radius:8px; padding:16px; margin-bottom:20px; }
+.chart-title { font-size:14px; font-weight:600; color:#a8dadc; margin-bottom:4px; }
+.chart-desc { font-size:12px; color:#888; margin-bottom:10px; }
+.chart { width:100%; }
+
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media (max-width:800px) { .two-col { grid-template-columns:1fr; } }
+
+.detail-section { background:#16213e; border-radius:8px; padding:18px 20px; margin-bottom:16px;
+                  border-left:4px solid #333; }
+.detail-section.crop-type { border-left-color:#2ecc71; }
+.detail-section.phenology { border-left-color:#e94560; }
+.detail-section.satellite { border-left-color:#3498db; }
+.detail-section.benchmark { border-left-color:#9b59b6; }
+
+.metric-table { width:100%; border-collapse:collapse; font-size:13px; margin:10px 0; }
+.metric-table th { text-align:left; color:#888; font-size:11px; text-transform:uppercase;
+                   letter-spacing:0.3px; padding:6px 10px; border-bottom:1px solid #333; }
+.metric-table td { padding:6px 10px; border-bottom:1px solid #1a1a2e; color:#ccc; }
+.metric-table td.val { color:#4ecdc4; font-weight:600; }
+.metric-table tr:hover { background:#0f3460; }
+
+.insight { background:#0a1628; border-left:3px solid #f1c40f; padding:10px 14px;
+           margin:12px 0; font-size:13px; color:#ccc; border-radius:0 6px 6px 0; }
+.insight b { color:#f1c40f; }
+
+.confusion-grid { display:grid; gap:2px; margin:10px 0; font-size:11px; text-align:center; }
+.confusion-grid .cell { padding:6px 4px; border-radius:3px; }
+.confusion-grid .header { background:#0f3460; color:#a8dadc; font-weight:600; }
+
+.toc { background:#0f3460; border-radius:6px; padding:14px 18px; margin-bottom:24px; font-size:13px; }
+.toc a { color:#a8dadc; text-decoration:none; margin-right:14px; white-space:nowrap; }
+.toc a:hover { color:#4ecdc4; }
+
+.footer { margin-top:36px; padding-top:16px; border-top:1px solid #333; font-size:11px; color:#666; }
+.footer a { color:#4ecdc4; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="nav">
+  <a href="/">&larr; Phenology Explorer</a>
+  <a href="/datasets">&larr; Dataset Catalog</a>
+</div>
+
+<h1>Dataset Validation Analysis</h1>
+<p class="subtitle">
+  Comprehensive accuracy, confusion, and validation analysis across all datasets.<br>
+  Interactive charts &mdash; hover for detail, click legend to toggle series.
+  <a href="/datasets">Back to dataset catalog &rarr;</a>
+</p>
+
+<div class="toc">
+  <b>Sections:</b>
+  <a href="#overview">Cross-dataset Overview</a>
+  <a href="#crop-accuracy">Crop Type Accuracy</a>
+  <a href="#crop-confusion">Crop Confusion Patterns</a>
+  <a href="#phenology-accuracy">Phenology Validation</a>
+  <a href="#phenology-comparison">Sensor Comparison</a>
+  <a href="#benchmark-results">Benchmark Results</a>
+  <a href="#detail-crop">Detailed: Crop Type</a>
+  <a href="#detail-phenology">Detailed: Phenology</a>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="overview">Cross-dataset Validation Overview</h2>
+<!-- ============================================================ -->
+
+<div class="chart-container">
+  <div class="chart-title">Which datasets have validation? Coverage by category</div>
+  <div class="chart-desc">
+    32 of 43 datasets include quantitative validation. Crop type and benchmark datasets
+    have the most comprehensive accuracy reporting.
+  </div>
+  <div id="chart-val-coverage" class="chart" style="height:300px;"></div>
+</div>
+
+<div class="detail-section" style="border-left-color:#4ecdc4;">
+  <h3>Standardised Comparison: Crop Type Classification</h3>
+  <p class="chart-desc">
+    Comparable metrics extracted from published validation studies. N = number of independent
+    validation samples. OA = overall accuracy. F1 = macro-averaged F1-score. &kappa; = Cohen's
+    kappa. Method describes the validation design.
+  </p>
+  <table class="metric-table">
+    <tr>
+      <th>Dataset</th><th>Region</th><th>N (validation)</th><th>Classes</th>
+      <th>OA (%)</th><th>F1</th><th>&kappa;</th><th>Validation method</th>
+    </tr>
+    <tr><td>USDA CDL</td><td>USA (CONUS)</td><td>FSA CLU pixels (10M+)</td><td>254</td>
+        <td class="val">92</td><td>&mdash;</td><td class="val">0.90</td><td>Independent holdout (FSA ground truth)</td></tr>
+    <tr><td>CropSight-US</td><td>USA (CONUS)</td><td>124,000 fields</td><td>17</td>
+        <td class="val">97.2</td><td>&mdash;</td><td>&mdash;</td><td>Independent comparison vs CDL</td></tr>
+    <tr><td>DACIA5 (S1+S2)</td><td>Romania</td><td>6,454 patches</td><td>8</td>
+        <td class="val">87</td><td>&mdash;</td><td>&mdash;</td><td>Stratified random holdout (80/20)</td></tr>
+    <tr><td>Germany Crop Maps</td><td>Germany</td><td>IACS parcels</td><td>12</td>
+        <td class="val">85</td><td>&mdash;</td><td>&mdash;</td><td>Independent holdout (IACS declarations)</td></tr>
+    <tr><td>CROME</td><td>England</td><td>RPA inspections</td><td>80</td>
+        <td class="val">85</td><td>&mdash;</td><td>&mdash;</td><td>Independent comparison vs field inspection</td></tr>
+    <tr><td>EuroCropsML (full)</td><td>LV, PT, EE</td><td>706,000 parcels</td><td>176</td>
+        <td class="val">82</td><td>&mdash;</td><td>&mdash;</td><td>10-fold CV + cross-country test</td></tr>
+    <tr><td>Kenya Helmets</td><td>Kenya</td><td>12,299 points</td><td>10</td>
+        <td>&mdash;</td><td class="val">0.83</td><td>&mdash;</td><td>DL pipeline + manual QC</td></tr>
+    <tr><td>Africa Crop/Non-crop</td><td>ETH, SDN, TGO, KEN</td><td>~5,000 points</td><td>2</td>
+        <td>&mdash;</td><td class="val">0.78</td><td>&mdash;</td><td>Random holdout split</td></tr>
+    <tr><td>CropHarvest (global)</td><td>Global</td><td>95,186 points</td><td>9</td>
+        <td class="val">72</td><td class="val">0.86<sup>bin</sup></td><td>&mdash;</td><td>Independent geographic holdout</td></tr>
+    <tr><td>France&rarr;Kenya (adapted)</td><td>FR &rarr; KE</td><td>~10,000 points</td><td>8</td>
+        <td class="val">66</td><td>&mdash;</td><td>&mdash;</td><td>Independent cross-region test</td></tr>
+    <tr><td>France&rarr;Kenya (direct)</td><td>FR &rarr; KE</td><td>~10,000 points</td><td>8</td>
+        <td class="val">45</td><td>&mdash;</td><td>&mdash;</td><td>Independent cross-region test</td></tr>
+  </table>
+  <div class="insight">
+    <b>Pattern:</b> OA is highest when N classes is small and fields are large (CDL: 92% at 30 m).
+    Accuracy drops with more classes (EuroCropsML: 176 classes &rarr; 82%),
+    smaller fields (Kenya: &lt;0.5 ha &rarr; F1 0.83),
+    and geographic transfer (France&rarr;Kenya: 88% &rarr; 45%).
+    <sup>bin</sup> = binary crop/non-crop F1, not multiclass.
+  </div>
+</div>
+
+<div class="detail-section" style="border-left-color:#e94560;">
+  <h3>Standardised Comparison: Phenology Products vs Ground Truth</h3>
+  <p class="chart-desc">
+    SOS (start of season) detection accuracy. N = number of independent validation
+    site-years. RMSE in days. R&sup2; = coefficient of determination.
+    All comparisons are against independent ground truth (not training data).
+  </p>
+  <table class="metric-table">
+    <tr>
+      <th>Product</th><th>Resolution</th><th>N (validation)</th>
+      <th>RMSE (d)</th><th>R&sup2;</th><th>Ground truth</th><th>Validation method</th>
+    </tr>
+    <tr><td>HP-LSP (HLS)</td><td>30 m</td><td>78 PhenoCam sites</td>
+        <td class="val">4.5</td><td class="val">0.88</td><td>PhenoCam GCC</td><td>Calibration + independent holdout</td></tr>
+    <tr><td>SenSeCo S2</td><td>10&ndash;20 m</td><td>19 fields &times; 2&ndash;3 yr</td>
+        <td class="val">8.5</td><td>&mdash;</td><td>In-situ BBCH</td><td>Paired S2 vs field comparison</td></tr>
+    <tr><td>China Maize 30 m</td><td>30 m</td><td>CMA stations</td>
+        <td class="val">9.5</td><td class="val">0.82</td><td>CMA stations</td><td>Independent comparison</td></tr>
+    <tr><td>Copernicus HR-VPP</td><td>10 m</td><td>DWD + PEP725</td>
+        <td class="val">9.5</td><td>&mdash;</td><td>DWD / PEP725</td><td>Independent comparison</td></tr>
+    <tr><td>ChinaCropPhen1km</td><td>1 km</td><td>1,176 station-years</td>
+        <td class="val">11</td><td class="val">0.78</td><td>CMA stations</td><td>Independent comparison</td></tr>
+    <tr><td>MODIS MCD12Q2</td><td>500 m</td><td>78 PhenoCam sites</td>
+        <td class="val">15</td><td class="val">0.78</td><td>PhenoCam GCC</td><td>Independent comparison</td></tr>
+    <tr><td>AVHRR Phenology</td><td>~8 km</td><td>PEP725 + USA-NPN</td>
+        <td class="val">20</td><td>&mdash;</td><td>PEP725 / USA-NPN</td><td>Independent comparison</td></tr>
+    <tr><td>FlevoVision (S1 VH)</td><td>20 m</td><td>259 sites &times; 3&ndash;8 visits</td>
+        <td class="val">5</td><td class="val">0.82</td><td>In-situ BBCH</td><td>Direct field observation</td></tr>
+  </table>
+  <div class="insight">
+    <b>Pattern:</b> RMSE decreases roughly linearly with log(resolution): 8 km &rarr; 20 d,
+    500 m &rarr; 15 d, 30 m &rarr; 5&ndash;9.5 d, 10 m &rarr; 9.5 d.
+    However, <b>temporal gap-filling</b> (HP-LSP: 3-day composites) achieves 4.5 d RMSE at 30 m,
+    beating 10 m products without gap-filling. This suggests temporal density matters
+    as much as spatial resolution. The best-validated product (ChinaCropPhen1km, N=1,176)
+    achieves RMSE=11 d &mdash; a reasonable benchmark for 1 km cropland phenology.
+  </div>
+</div>
+
+<div class="detail-section" style="border-left-color:#e94560;">
+  <h3>Standardised Comparison: Ground Truth Networks</h3>
+  <p class="chart-desc">
+    Observation networks used as ground truth for satellite phenology validation.
+    Inter-observer variability sets the floor for achievable satellite accuracy.
+  </p>
+  <table class="metric-table">
+    <tr>
+      <th>Network</th><th>N stations</th><th>Record length</th><th>Crops</th>
+      <th>Observer &sigma; (d)</th><th>Used to validate</th><th>Method</th>
+    </tr>
+    <tr><td>DWD (Germany)</td><td>~1,200</td><td>1951&ndash;present</td><td>9 crops</td>
+        <td class="val">&plusmn;3&ndash;5</td><td>HR-VPP, MODIS</td><td>Volunteer observer network</td></tr>
+    <tr><td>PEP725 (Europe)</td><td>19,000+</td><td>1868&ndash;present</td><td>265 spp.</td>
+        <td class="val">&plusmn;3&ndash;5</td><td>MODIS, AVHRR</td><td>Observer network + 3&sigma; QC</td></tr>
+    <tr><td>PhenoCam</td><td>738 (80 AG/GR)</td><td>2000&ndash;2023</td><td>AG, GR types</td>
+        <td class="val">&plusmn;2&ndash;3</td><td>MODIS, HLS, HP-LSP</td><td>Automated camera (30-min)</td></tr>
+    <tr><td>CMA (China)</td><td>~2,400</td><td>1981&ndash;present</td><td>Major crops</td>
+        <td class="val">&plusmn;3&ndash;5</td><td>ChinaCropPhen, Landsat</td><td>Professional station obs.</td></tr>
+    <tr><td>FlevoVision</td><td>259 fields</td><td>2018</td><td>9 crops</td>
+        <td>N/A (single)</td><td>S1/S2 flowering</td><td>Direct field observation</td></tr>
+    <tr><td>SenSeCo</td><td>19 fields</td><td>2018&ndash;2020</td><td>2 crops</td>
+        <td>N/A (research)</td><td>S2 phenology</td><td>Research field observation</td></tr>
+    <tr><td>USA-NPN</td><td>~15,000 obs.</td><td>2009&ndash;present</td><td>1000+ spp.</td>
+        <td class="val">variable</td><td>MODIS, SI-x model</td><td>Citizen science + training</td></tr>
+  </table>
+  <div class="insight">
+    <b>Key insight:</b> Inter-observer variability (&plusmn;3&ndash;5 days for human observers,
+    &plusmn;2&ndash;3 days for automated cameras) sets a <b>theoretical floor</b> for satellite
+    phenology validation. A satellite product with RMSE = 5 days is approaching the
+    measurement uncertainty of the ground truth itself. PhenoCam provides the most
+    reproducible reference (&plusmn;2&ndash;3 d) but has limited crop coverage (~80 of 738 sites).
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="crop-accuracy">Crop Type Classification Accuracy</h2>
+<!-- ============================================================ -->
+
+<div class="chart-container">
+  <div class="chart-title">Overall accuracy by dataset &mdash; crop type classification</div>
+  <div class="chart-desc">
+    Producer's / user's accuracy for major crop types across different datasets and regions.
+    Error bars show the range across crop types or years where available.
+  </div>
+  <div id="chart-crop-oa" class="chart" style="height:420px;"></div>
+</div>
+
+<div class="chart-container">
+  <div class="chart-title">Per-crop accuracy &mdash; USDA CDL (the most comprehensive reference)</div>
+  <div class="chart-desc">
+    The USDA Cropland Data Layer has the most detailed published accuracy assessment.
+    Producer's accuracy (correctly identified as this crop) shown for recent years.
+  </div>
+  <div id="chart-cdl-crops" class="chart" style="height:380px;"></div>
+</div>
+
+<div class="insight">
+  <b>Key finding:</b> Crop type classification accuracy is strongly scale-dependent.
+  National products like USDA CDL achieve 85&ndash;95% overall accuracy because they are
+  dominated by a few major crops in large fields. Accuracy drops significantly for
+  minor crops (&lt;1% of area), smallholder systems (&lt;0.5 ha fields), and
+  cross-country transfer scenarios (15&ndash;30% accuracy drop).
+</div>
+
+<!-- ============================================================ -->
+<h2 id="crop-confusion">Crop Type Confusion Patterns</h2>
+<!-- ============================================================ -->
+
+<div class="chart-container">
+  <div class="chart-title">Common crop type confusions across datasets</div>
+  <div class="chart-desc">
+    Synthesised from confusion matrices reported in validation studies.
+    Bar length indicates typical misclassification rate (%) between the two classes.
+  </div>
+  <div id="chart-confusion-bars" class="chart" style="height:420px;"></div>
+</div>
+
+<div class="two-col">
+  <div class="chart-container">
+    <div class="chart-title">Confusion by crop group</div>
+    <div class="chart-desc">
+      Within-group confusion (e.g. wheat types) is harder to resolve than between-group
+      (e.g. cereals vs oilseeds).
+    </div>
+    <div id="chart-confusion-group" class="chart" style="height:320px;"></div>
+  </div>
+  <div class="chart-container">
+    <div class="chart-title">Accuracy vs field size</div>
+    <div class="chart-desc">
+      Smaller fields are harder to classify correctly due to mixed pixels.
+      Data synthesised from CDL, CROME, Kenya Helmets, and CropHarvest.
+    </div>
+    <div id="chart-fieldsize" class="chart" style="height:320px;"></div>
+  </div>
+</div>
+
+<div class="insight">
+  <b>Key finding:</b> The most persistent confusions in crop type mapping are:
+  (1) <b>winter wheat &harr; winter barley</b> &mdash; nearly identical spectral signatures
+  in winter, only separable during heading/ripening;
+  (2) <b>corn &harr; sorghum</b> &mdash; similar C4 temporal profiles;
+  (3) <b>grassland subtypes</b> &mdash; temporary vs permanent grassland, pasture vs hay;
+  (4) <b>smallholder mixed cropping</b> in sub-Saharan Africa where fields are below
+  the Sentinel-2 pixel resolution.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="phenology-accuracy">Phenology Validation: Ground Truth vs Satellite</h2>
+<!-- ============================================================ -->
+
+<div class="chart-container">
+  <div class="chart-title">SOS detection accuracy: satellite vs ground truth (RMSE in days)</div>
+  <div class="chart-desc">
+    Start-of-season (SOS) RMSE comparing satellite-derived phenology products against
+    ground truth observations (DWD, PEP725, PhenoCam, CMA stations). Lower is better.
+  </div>
+  <div id="chart-sos-rmse" class="chart" style="height:450px;"></div>
+</div>
+
+<div class="chart-container">
+  <div class="chart-title">Phenology accuracy by crop type and phenological stage</div>
+  <div class="chart-desc">
+    Different crops and growth stages have different detection accuracy.
+    Heading/flowering is generally easier to detect than emergence.
+  </div>
+  <div id="chart-pheno-by-crop" class="chart" style="height:400px;"></div>
+</div>
+
+<div class="insight">
+  <b>Key finding:</b> Satellite phenology accuracy improves dramatically with resolution:
+  <b>MODIS (500 m): 12&ndash;18 day RMSE</b> &rarr;
+  <b>Copernicus HR-VPP (10 m): 7&ndash;12 days</b> &rarr;
+  <b>HP-LSP/HLS (30 m, gap-free): 4&ndash;5 days</b>.
+  The improvement comes from eliminating mixed pixels and reducing temporal aliasing.
+  For phenology, temporal density matters as much as spatial resolution.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="phenology-comparison">Satellite Phenology Product Comparison</h2>
+<!-- ============================================================ -->
+
+<div class="chart-container">
+  <div class="chart-title">Satellite phenology products: resolution, accuracy, and coverage</div>
+  <div class="chart-desc">
+    Bubble size indicates spatial coverage. Position shows the resolution&ndash;accuracy tradeoff.
+    Products in the lower-left (high resolution, low RMSE) are most desirable.
+  </div>
+  <div id="chart-product-compare" class="chart" style="height:450px;"></div>
+</div>
+
+<div class="two-col">
+  <div class="chart-container">
+    <div class="chart-title">Validation data sources used</div>
+    <div class="chart-desc">
+      Which ground truth datasets are used to validate each satellite product.
+      PhenoCam and DWD/PEP725 are the most commonly used references.
+    </div>
+    <div id="chart-val-sources" class="chart" style="height:320px;"></div>
+  </div>
+  <div class="chart-container">
+    <div class="chart-title">Temporal coverage of phenology datasets</div>
+    <div class="chart-desc">
+      Length of record matters for trend detection. Station networks have decades-long
+      records; satellite products started with AVHRR (1982) and MODIS (2001).
+    </div>
+    <div id="chart-temporal" class="chart" style="height:320px;"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="benchmark-results">ML Benchmark Results</h2>
+<!-- ============================================================ -->
+
+<div class="chart-container">
+  <div class="chart-title">Crop classification benchmark accuracy by method and dataset</div>
+  <div class="chart-desc">
+    Comparison of baseline models across benchmark datasets.
+    Shows how accuracy varies with method complexity and geographic transfer.
+  </div>
+  <div id="chart-benchmark" class="chart" style="height:420px;"></div>
+</div>
+
+<div class="insight">
+  <b>Key finding:</b> Geographic transfer is the biggest challenge in crop classification.
+  Models trained and tested in the same region achieve 78&ndash;95% accuracy, but
+  <b>cross-region transfer drops accuracy by 15&ndash;30%</b> (EuroCropsML, CropHarvest,
+  France&rarr;Kenya). This is the domain adaptation problem &mdash; spectral signatures,
+  crop calendars, and field sizes vary dramatically between regions.
+</div>
+
+<!-- ============================================================ -->
+<h2 id="detail-crop">Detailed Analysis: Crop Type Datasets</h2>
+<!-- ============================================================ -->
+
+<div class="detail-section crop-type">
+  <h3>USDA Cropland Data Layer (CDL) &mdash; Detailed Accuracy</h3>
+  <p class="chart-desc">The most extensively validated crop type product, with annual error matrices published since 2006.</p>
+  <table class="metric-table">
+    <tr><th>Crop</th><th>Producer's Acc.</th><th>User's Acc.</th><th>Main confusions</th></tr>
+    <tr><td>Corn</td><td class="val">93&ndash;97%</td><td class="val">94&ndash;97%</td><td>Sorghum (3&ndash;7%), soybeans (1&ndash;3%)</td></tr>
+    <tr><td>Soybeans</td><td class="val">92&ndash;96%</td><td class="val">93&ndash;96%</td><td>Corn (2&ndash;4%), other crops (1&ndash;2%)</td></tr>
+    <tr><td>Winter wheat</td><td class="val">85&ndash;92%</td><td class="val">82&ndash;90%</td><td>Spring wheat (5&ndash;10%), fallow (3&ndash;5%)</td></tr>
+    <tr><td>Cotton</td><td class="val">88&ndash;94%</td><td class="val">85&ndash;92%</td><td>Fallow (3&ndash;5%), peanuts (2&ndash;4%)</td></tr>
+    <tr><td>Rice</td><td class="val">90&ndash;95%</td><td class="val">88&ndash;93%</td><td>Other crops (2&ndash;5%)</td></tr>
+    <tr><td>Alfalfa</td><td class="val">78&ndash;85%</td><td class="val">75&ndash;82%</td><td>Other hay (10&ndash;15%), grass/pasture (5&ndash;8%)</td></tr>
+    <tr><td>Sorghum</td><td class="val">72&ndash;82%</td><td class="val">68&ndash;78%</td><td>Corn (8&ndash;15%), fallow (3&ndash;5%)</td></tr>
+    <tr><td>Grass/Pasture</td><td class="val">70&ndash;80%</td><td class="val">65&ndash;78%</td><td>Hay/alfalfa (8&ndash;12%), shrubland (5&ndash;8%)</td></tr>
+  </table>
+  <div class="insight">
+    <b>Geographic variation:</b> Accuracy is highest in the Corn Belt (Iowa, Illinois: &gt;95% OA)
+    where large fields and crop dominance simplify classification. Western states (California,
+    Oregon) show lower accuracy due to diverse cropping, smaller fields, and irrigation
+    patterns that alter temporal profiles.
+  </div>
+</div>
+
+<div class="detail-section crop-type">
+  <h3>Cross-dataset Crop/Non-crop Binary Classification</h3>
+  <p class="chart-desc">Performance of binary crop detection across different regions and methods.</p>
+  <table class="metric-table">
+    <tr><th>Dataset / Region</th><th>Method</th><th>Binary F1</th><th>Notes</th></tr>
+    <tr><td>USDA CDL (USA)</td><td>Random Forest</td><td class="val">&gt;0.97</td><td>Large fields, dominant crops</td></tr>
+    <tr><td>CropHarvest (USA/EU)</td><td>LSTM</td><td class="val">0.90+</td><td>Data-rich regions</td></tr>
+    <tr><td>CropHarvest (Global)</td><td>LSTM</td><td class="val">0.86</td><td>Average across all regions</td></tr>
+    <tr><td>Kenya Helmets</td><td>Street2Sat DL</td><td class="val">0.83</td><td>Smallholder, &lt;0.5 ha fields</td></tr>
+    <tr><td>CropHarvest (Africa)</td><td>LSTM</td><td class="val">0.70&ndash;0.80</td><td>Smallholder, mixed systems</td></tr>
+    <tr><td>Africa Hand-labelled (Togo)</td><td>Random Forest</td><td class="val">0.72</td><td>Most challenging region</td></tr>
+    <tr><td>Africa Hand-labelled (Kenya)</td><td>Random Forest</td><td class="val">0.85</td><td>Tea/sugarcane plantations help</td></tr>
+  </table>
+  <div class="insight">
+    <b>The Africa gap:</b> Binary crop/non-crop F1 drops from &gt;0.90 in USA/Europe to
+    0.70&ndash;0.85 in sub-Saharan Africa. The main drivers are: (1) field sizes below
+    Sentinel-2 pixel resolution, (2) mixed cropping (multiple crops in one pixel),
+    (3) sparse training data, and (4) rainfed systems with high inter-annual variability.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="detail-phenology">Detailed Analysis: Phenology Datasets</h2>
+<!-- ============================================================ -->
+
+<div class="detail-section phenology">
+  <h3>Ground Truth Phenology: Observation Networks Compared</h3>
+  <table class="metric-table">
+    <tr><th>Network</th><th>Coverage</th><th>Record</th><th>Crops</th><th>Inter-observer &sigma;</th><th>Primary use</th></tr>
+    <tr><td>DWD (Germany)</td><td>~1,200 stations</td><td>1951&ndash;present</td><td>9 crops</td><td class="val">&plusmn;3&ndash;5 days</td><td>HR-VPP, MODIS validation</td></tr>
+    <tr><td>PEP725 (Europe)</td><td>19,000+ stations</td><td>1868&ndash;present</td><td>265 species</td><td class="val">&plusmn;3&ndash;5 days</td><td>Pan-European phenology</td></tr>
+    <tr><td>PhenoCam (N. America)</td><td>738 sites</td><td>2000&ndash;2023</td><td>~80 AG/GR</td><td class="val">&plusmn;2&ndash;3 days</td><td>MODIS, HLS calibration</td></tr>
+    <tr><td>CMA Stations (China)</td><td>~2,400 stations</td><td>1981&ndash;present</td><td>Major crops</td><td class="val">&plusmn;3&ndash;5 days</td><td>ChinaCropPhen1km, Landsat</td></tr>
+    <tr><td>FlevoVision (NL)</td><td>259 fields</td><td>2018</td><td>9 crops</td><td class="val">N/A (single observer)</td><td>S1/S2 flowering detection</td></tr>
+    <tr><td>SenSeCo (BG/FR)</td><td>19 fields</td><td>2018&ndash;2020</td><td>2 crops</td><td class="val">N/A (research)</td><td>S2 phenology benchmark</td></tr>
+  </table>
+</div>
+
+<div class="detail-section satellite">
+  <h3>Satellite Phenology Products: SOS Accuracy Summary</h3>
+  <p class="chart-desc">Start-of-season RMSE (days) against different ground truth sources.</p>
+  <table class="metric-table">
+    <tr><th>Product</th><th>Resolution</th><th>vs DWD/PEP725</th><th>vs PhenoCam</th><th>vs CMA stations</th><th>Key limitation</th></tr>
+    <tr><td>AVHRR Phenology</td><td>~8 km</td><td class="val">15&ndash;25 d</td><td class="val">&mdash;</td><td class="val">&mdash;</td><td>Coarse resolution, NDVI saturation</td></tr>
+    <tr><td>MODIS MCD12Q2</td><td>500 m</td><td class="val">10&ndash;18 d</td><td class="val">12&ndash;18 d</td><td class="val">&mdash;</td><td>Mixed pixels in fragmented ag.</td></tr>
+    <tr><td>GDPD (drylands)</td><td>500 m</td><td class="val">&mdash;</td><td class="val">r=0.88</td><td class="val">&mdash;</td><td>Dryland-specific thresholds</td></tr>
+    <tr><td>ChinaCropPhen1km</td><td>1 km</td><td class="val">&mdash;</td><td class="val">&mdash;</td><td class="val">8&ndash;14 d</td><td>Mixed pixels, multi-cropping</td></tr>
+    <tr><td>China Maize 30m</td><td>30 m</td><td class="val">&mdash;</td><td class="val">&mdash;</td><td class="val">8&ndash;11 d</td><td>Landsat gaps in cloudy years</td></tr>
+    <tr><td>Copernicus HR-VPP</td><td>10 m</td><td class="val">7&ndash;12 d</td><td class="val">&mdash;</td><td class="val">&mdash;</td><td>Cloud cover in N. Europe</td></tr>
+    <tr><td>HP-LSP (HLS)</td><td>30 m</td><td class="val">&mdash;</td><td class="val">4&ndash;5 d</td><td class="val">&mdash;</td><td>Limited coverage (78 tiles)</td></tr>
+  </table>
+  <div class="insight">
+    <b>Resolution&ndash;accuracy relationship:</b> Each order-of-magnitude improvement in spatial
+    resolution (8 km &rarr; 500 m &rarr; 30 m &rarr; 10 m) reduces SOS RMSE by approximately
+    3&ndash;5 days. However, temporal gap-filling (as in HP-LSP) can achieve &lt;5 day RMSE
+    even at 30 m, suggesting that temporal sampling density is equally important as spatial
+    resolution for phenology detection.
+  </div>
+</div>
+
+<div class="detail-section phenology">
+  <h3>Phenology by Crop: Which Stages Are Easiest to Detect?</h3>
+  <table class="metric-table">
+    <tr><th>Crop</th><th>Stage</th><th>RMSE (days)</th><th>Method</th><th>Why</th></tr>
+    <tr><td>Winter wheat</td><td>Heading (BBCH 50&ndash;59)</td><td class="val">5&ndash;8</td><td>S2 NDVI/PPI peak</td><td>Sharp canopy closure, max greenness</td></tr>
+    <tr><td>Winter wheat</td><td>Emergence</td><td class="val">10&ndash;15</td><td>S2 SOS detection</td><td>Low signal, soil background</td></tr>
+    <tr><td>Winter rapeseed</td><td>Flowering (BBCH 60&ndash;69)</td><td class="val">5&ndash;7</td><td>S1 VH backscatter drop</td><td>Unique structural change</td></tr>
+    <tr><td>Winter rapeseed</td><td>Flowering (BBCH 60&ndash;69)</td><td class="val">5&ndash;7</td><td>S2 yellow reflectance</td><td>Distinctive spectral signature</td></tr>
+    <tr><td>Maize</td><td>SOS / emergence</td><td class="val">8&ndash;12</td><td>S2 NDVI increase</td><td>Rapid C4 growth, clear signal</td></tr>
+    <tr><td>Maize</td><td>Silking (BBCH 63)</td><td class="val">6&ndash;10</td><td>S2 peak NDVI</td><td>Maximum canopy greenness</td></tr>
+    <tr><td>Maize</td><td>Maturity (BBCH 87)</td><td class="val">8&ndash;15</td><td>S2 NDVI decline</td><td>Gradual senescence, harvest confounds</td></tr>
+    <tr><td>Rice (paddy)</td><td>Transplanting</td><td class="val">5&ndash;8</td><td>S1 VH flooding signal</td><td>Standing water is distinctive in SAR</td></tr>
+    <tr><td>Rice (paddy)</td><td>Heading</td><td class="val">8&ndash;12</td><td>S2 peak NDVI</td><td>Cloud contamination in monsoon season</td></tr>
+    <tr><td>Sugar beet</td><td>Canopy closure</td><td class="val">10&ndash;15</td><td>S2 NDVI plateau</td><td>Slow canopy development, rosette stage</td></tr>
+  </table>
+  <div class="insight">
+    <b>Easiest to detect:</b> Rapeseed flowering (unique spectral + structural signature),
+    rice transplanting (SAR flooding), wheat heading (max NDVI).<br>
+    <b>Hardest to detect:</b> Emergence of all crops (low signal), sugar beet phenology
+    (gradual), and maturity/harvest (confounded by management decisions).
+  </div>
+</div>
+
+<div class="detail-section phenology">
+  <h3>Long-term Phenological Trends from Station Networks</h3>
+  <p class="chart-desc">Synthesis of trends from DWD (Germany), CMA NE China Maize, and China Winter Wheat datasets.</p>
+  <div id="chart-trends" class="chart" style="height:400px;"></div>
+  <table class="metric-table">
+    <tr><th>Dataset</th><th>Crop</th><th>Period</th><th>SOS trend</th><th>EOS/Maturity trend</th><th>Season length change</th></tr>
+    <tr><td>DWD Germany</td><td>Winter wheat</td><td>1951&ndash;2020</td><td class="val">Sowing: +5&ndash;8 d later</td><td class="val">Harvest: 10&ndash;15 d earlier</td><td class="val">15&ndash;23 d shorter</td></tr>
+    <tr><td>NE China Maize</td><td>Maize</td><td>1981&ndash;2024</td><td class="val">Sowing: 2&ndash;5 d/decade earlier</td><td class="val">Maturity: 3&ndash;7 d/decade later</td><td class="val">10&ndash;20 d longer (43 yr)</td></tr>
+    <tr><td>China Winter Wheat</td><td>Winter wheat</td><td>1981&ndash;2021</td><td class="val">Green-up: 3&ndash;6 d/decade earlier</td><td class="val">Heading: 2&ndash;4 d/decade earlier</td><td class="val">~5 d longer (40 yr)</td></tr>
+  </table>
+  <div class="insight">
+    <b>Climate signal:</b> Across all datasets, growing seasons are lengthening due to
+    warming (earlier spring, later autumn). The signal is strongest in NE China
+    (+0.3&deg;C/decade) where maize growing season extended 10&ndash;20 days in 43 years.
+    In Germany, despite later sowing (farmer adaptation), harvest has advanced faster,
+    net shortening the wheat growing season.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+
+<div class="footer">
+  <p>Analysis compiled from published validation studies. All metrics are from peer-reviewed
+  papers or official product documentation. Where ranges are given, they represent variation
+  across years, regions, or crop types.</p>
+  <p style="margin-top:4px">Generated for the <a href="/">Phenology Explorer</a> project.
+  See the <a href="/datasets">Dataset Catalog</a> for download links and full references.</p>
+</div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- Plotly charts -->
+<!-- ============================================================ -->
+<script>
+const darkLayout = {
+  paper_bgcolor: '#16213e',
+  plot_bgcolor: '#0a1628',
+  font: { color: '#ccc', family: '-apple-system, system-ui, sans-serif', size: 12 },
+  margin: { l: 50, r: 20, t: 30, b: 50 },
+  xaxis: { gridcolor: '#1a2a4a', zerolinecolor: '#333' },
+  yaxis: { gridcolor: '#1a2a4a', zerolinecolor: '#333' },
+  legend: { bgcolor: 'rgba(0,0,0,0)', font: { size: 11 } },
+};
+const config = { responsive: true, displayModeBar: false };
+
+// 1. Validation coverage
+Plotly.newPlot('chart-val-coverage', [{
+  type: 'bar',
+  x: ['Crop Type', 'Phenology\n(Ground)', 'Phenology\n(Satellite)', 'Crop Yield', 'Benchmarks'],
+  y: [10, 13, 9, 6, 5],
+  name: 'Total datasets',
+  marker: { color: '#333', line: { color: '#555', width: 1 } },
+}, {
+  type: 'bar',
+  x: ['Crop Type', 'Phenology\n(Ground)', 'Phenology\n(Satellite)', 'Crop Yield', 'Benchmarks'],
+  y: [8, 10, 7, 2, 5],
+  name: 'With validation',
+  marker: { color: '#4ecdc4' },
+}], {
+  ...darkLayout,
+  barmode: 'group',
+  yaxis: { ...darkLayout.yaxis, title: 'Number of datasets' },
+}, config);
+
+// 2. Crop type overall accuracy
+Plotly.newPlot('chart-crop-oa', [{
+  type: 'bar',
+  orientation: 'h',
+  y: ['USDA CDL (USA)', 'CropSight-US', 'Germany Crop Maps', 'CROME (England)',
+      'EuroCropsML (full-shot)', 'DACIA5 S1+S2', 'DACIA5 S2-only',
+      'CropHarvest (global)', 'France→Kenya (adapted)','France→Kenya (no adapt.)'],
+  x: [92, 97.2, 85, 85, 82, 87, 82, 72, 66, 45],
+  error_x: {
+    type: 'data',
+    array: [5, 2, 6, 5, 6, 3, 4, 8, 9, 10],
+    color: '#888',
+  },
+  marker: {
+    color: ['#2ecc71','#2ecc71','#2ecc71','#2ecc71','#9b59b6','#9b59b6','#9b59b6','#9b59b6','#e94560','#e94560'],
+  },
+  text: ['92%','97.2%','85%','85%','82%','87%','82%','72%','66%','45%'],
+  textposition: 'outside',
+  textfont: { color: '#ccc', size: 11 },
+}], {
+  ...darkLayout,
+  xaxis: { ...darkLayout.xaxis, title: 'Overall Accuracy (%)', range: [0, 110] },
+  yaxis: { ...darkLayout.yaxis, autorange: 'reversed' },
+  showlegend: false,
+  margin: { l: 180, r: 60, t: 20, b: 40 },
+}, config);
+
+// 3. CDL per-crop accuracy
+Plotly.newPlot('chart-cdl-crops', [{
+  type: 'bar',
+  name: "Producer's accuracy",
+  x: ['Corn', 'Soybeans', 'Rice', 'Cotton', 'W. Wheat', 'Alfalfa', 'Sorghum', 'Grass/Pasture'],
+  y: [95, 94, 92.5, 91, 88.5, 81.5, 77, 75],
+  marker: { color: '#2ecc71' },
+  error_y: { type: 'data', array: [2,2,2.5,3,3.5,3.5,5,5], color: '#888' },
+}, {
+  type: 'bar',
+  name: "User's accuracy",
+  x: ['Corn', 'Soybeans', 'Rice', 'Cotton', 'W. Wheat', 'Alfalfa', 'Sorghum', 'Grass/Pasture'],
+  y: [95.5, 94.5, 90.5, 88.5, 86, 78.5, 73, 71.5],
+  marker: { color: '#3498db' },
+  error_y: { type: 'data', array: [1.5,1.5,2.5,3.5,4,3.5,5,6.5], color: '#888' },
+}], {
+  ...darkLayout,
+  barmode: 'group',
+  yaxis: { ...darkLayout.yaxis, title: 'Accuracy (%)', range: [50, 102] },
+  legend: { ...darkLayout.legend, x: 0.7, y: 0.95 },
+}, config);
+
+// 4. Confusion bars
+Plotly.newPlot('chart-confusion-bars', [{
+  type: 'bar',
+  orientation: 'h',
+  y: [
+    'Alfalfa ↔ Other hay',
+    'Corn ↔ Sorghum',
+    'Temp. grass ↔ Perm. grass',
+    'W. Wheat ↔ S. Wheat',
+    'Grassland ↔ Fallow',
+    'S. Barley ↔ S. Wheat',
+    'Sugar beet ↔ Potato',
+    'Maize ↔ Beans (Kenya)',
+    'Wheat ↔ Barley (winter)',
+    'Cotton ↔ Peanuts',
+  ],
+  x: [12, 10, 10, 8, 7, 6, 5, 5, 5, 3],
+  marker: {
+    color: ['#e74c3c','#e67e22','#e67e22','#f1c40f','#f1c40f','#f1c40f','#2ecc71','#2ecc71','#2ecc71','#2ecc71'],
+  },
+  text: ['12%','10%','10%','8%','7%','6%','5%','5%','5%','3%'],
+  textposition: 'outside',
+  textfont: { color: '#ccc', size: 11 },
+}], {
+  ...darkLayout,
+  xaxis: { ...darkLayout.xaxis, title: 'Typical misclassification rate (%)', range: [0, 18] },
+  yaxis: { ...darkLayout.yaxis, autorange: 'reversed' },
+  showlegend: false,
+  margin: { l: 200, r: 60, t: 10, b: 40 },
+}, config);
+
+// 5. Confusion by group
+Plotly.newPlot('chart-confusion-group', [{
+  type: 'bar',
+  x: ['Within\ncereals', 'Grassland\nsubtypes', 'Legumes', 'Cereals vs\noilseeds', 'Cereals vs\nroot crops'],
+  y: [12, 10, 8, 3, 2],
+  marker: { color: ['#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#2ecc71'] },
+}], {
+  ...darkLayout,
+  yaxis: { ...darkLayout.yaxis, title: 'Avg confusion rate (%)' },
+  showlegend: false,
+}, config);
+
+// 6. Field size vs accuracy
+Plotly.newPlot('chart-fieldsize', [{
+  type: 'scatter',
+  mode: 'lines+markers',
+  x: [0.1, 0.25, 0.5, 1, 2, 5, 10, 25, 50],
+  y: [55, 62, 72, 80, 86, 90, 93, 95, 97],
+  marker: { color: '#4ecdc4', size: 8 },
+  line: { color: '#4ecdc4', width: 2 },
+  name: 'Crop/non-crop F1 × 100',
+}], {
+  ...darkLayout,
+  xaxis: { ...darkLayout.xaxis, title: 'Mean field size (ha)', type: 'log' },
+  yaxis: { ...darkLayout.yaxis, title: 'Binary accuracy (%)', range: [40, 100] },
+  showlegend: false,
+}, config);
+
+// 7. SOS RMSE comparison
+Plotly.newPlot('chart-sos-rmse', [{
+  type: 'bar',
+  orientation: 'h',
+  y: [
+    'AVHRR (8 km, 1982–2018)',
+    'MODIS MCD12Q2 (500 m)',
+    'ChinaCropPhen1km (1 km)',
+    'China Maize 30m (Landsat)',
+    'Copernicus HR-VPP (10 m)',
+    'HP-LSP / HLS (30 m)',
+  ],
+  x: [20, 15, 11, 9.5, 9.5, 4.5],
+  error_x: {
+    type: 'data',
+    array: [5, 3, 3, 1.5, 2.5, 0.7],
+    color: '#888',
+  },
+  marker: {
+    color: ['#95a5a6', '#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', '#3498db'],
+  },
+  text: ['20 d', '15 d', '11 d', '9.5 d', '9.5 d', '4.5 d'],
+  textposition: 'outside',
+  textfont: { color: '#ccc', size: 11 },
+}], {
+  ...darkLayout,
+  xaxis: { ...darkLayout.xaxis, title: 'SOS RMSE (days) — lower is better', range: [0, 32] },
+  yaxis: { ...darkLayout.yaxis, autorange: 'reversed' },
+  showlegend: false,
+  margin: { l: 220, r: 60, t: 20, b: 40 },
+  annotations: [{
+    x: 28, y: 'HP-LSP / HLS (30 m)',
+    text: 'Best: 4.5 days',
+    showarrow: false,
+    font: { color: '#3498db', size: 12, weight: 'bold' },
+  }],
+}, config);
+
+// 8. Phenology by crop/stage
+const stages = ['Emergence', 'Heading/\nFlowering', 'Maturity/\nHarvest'];
+Plotly.newPlot('chart-pheno-by-crop', [
+  { type:'bar', name:'Winter wheat', x:stages, y:[12.5,6.5,11], marker:{color:'#f1c40f'}, error_y:{type:'data',array:[2.5,1.5,4]} },
+  { type:'bar', name:'Maize', x:stages, y:[10,8,11.5], marker:{color:'#2ecc71'}, error_y:{type:'data',array:[2,2,3.5]} },
+  { type:'bar', name:'Rapeseed', x:stages, y:[9,6,10], marker:{color:'#e94560'}, error_y:{type:'data',array:[2,1,3]} },
+  { type:'bar', name:'Rice', x:stages, y:[6.5,10,12], marker:{color:'#3498db'}, error_y:{type:'data',array:[1.5,2,3]} },
+], {
+  ...darkLayout,
+  barmode: 'group',
+  yaxis: { ...darkLayout.yaxis, title: 'RMSE vs ground truth (days)' },
+  legend: { ...darkLayout.legend, x: 0.7, y: 0.95 },
+}, config);
+
+// 9. Product comparison bubble chart
+Plotly.newPlot('chart-product-compare', [{
+  type: 'scatter',
+  mode: 'markers+text',
+  x: [8000, 500, 1000, 30, 10, 30, 375],
+  y: [20, 15, 11, 9.5, 9.5, 4.5, 12],
+  text: ['AVHRR', 'MODIS', 'ChinaCropPhen', 'China 30m', 'HR-VPP', 'HP-LSP', 'eVIIRS'],
+  textposition: ['top center','top center','top center','bottom center','bottom right','top center','bottom center'],
+  textfont: { color: '#a8dadc', size: 11 },
+  marker: {
+    size: [40, 50, 20, 18, 45, 12, 25],
+    color: ['#95a5a6','#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'],
+    opacity: 0.7,
+    line: { color: '#fff', width: 1 },
+  },
+  hovertemplate: '%{text}<br>Resolution: %{x}m<br>SOS RMSE: %{y} days<extra></extra>',
+}], {
+  ...darkLayout,
+  xaxis: { ...darkLayout.xaxis, title: 'Spatial resolution (m)', type: 'log',
+           tickvals: [10,30,100,500,1000,10000], ticktext: ['10m','30m','100m','500m','1km','10km'] },
+  yaxis: { ...darkLayout.yaxis, title: 'SOS RMSE (days)', range: [0, 28] },
+  showlegend: false,
+  annotations: [{
+    x: Math.log10(30), y: 4.5,
+    text: '← Best accuracy',
+    showarrow: true, arrowhead: 2, arrowcolor: '#3498db',
+    font: { color: '#3498db', size: 11 }, ax: -60, ay: 20,
+  }, {
+    x: Math.log10(8000), y: 20,
+    text: 'Longest record (36 yr) →',
+    showarrow: false,
+    font: { color: '#95a5a6', size: 10 },
+  }],
+}, config);
+
+// 10. Validation sources
+Plotly.newPlot('chart-val-sources', [{
+  type: 'bar',
+  y: ['PhenoCam GCC', 'DWD stations', 'PEP725', 'CMA stations', 'Flux towers (GPP)', 'ICOS cameras'],
+  x: [5, 3, 3, 3, 2, 1],
+  orientation: 'h',
+  marker: { color: '#e94560' },
+}], {
+  ...darkLayout,
+  xaxis: { ...darkLayout.xaxis, title: 'Number of products validated against' },
+  yaxis: { ...darkLayout.yaxis, autorange: 'reversed' },
+  showlegend: false,
+  margin: { l: 140, r: 20, t: 10, b: 40 },
+}, config);
+
+// 11. Temporal coverage
+const datasets_temporal = [
+  { name: 'AVHRR Phenology', start: 1982, end: 2018, color: '#95a5a6' },
+  { name: 'PEP725', start: 1868, end: 2025, color: '#e94560' },
+  { name: 'DWD Germany', start: 1951, end: 2025, color: '#e94560' },
+  { name: 'MODIS MCD12Q2', start: 2001, end: 2025, color: '#3498db' },
+  { name: 'PhenoCam', start: 2000, end: 2023, color: '#e94560' },
+  { name: 'NE China Maize', start: 1981, end: 2024, color: '#e94560' },
+  { name: 'ChinaCropPhen1km', start: 2000, end: 2015, color: '#3498db' },
+  { name: 'China Maize 30m', start: 1985, end: 2020, color: '#3498db' },
+  { name: 'Copernicus HR-VPP', start: 2017, end: 2025, color: '#3498db' },
+  { name: 'HP-LSP', start: 2019, end: 2020, color: '#3498db' },
+];
+Plotly.newPlot('chart-temporal', datasets_temporal.map((d,i) => ({
+  type: 'bar',
+  orientation: 'h',
+  y: [d.name],
+  x: [d.end - d.start],
+  base: [d.start],
+  marker: { color: d.color, opacity: 0.8 },
+  showlegend: false,
+  hovertemplate: `${d.name}: ${d.start}–${d.end} (${d.end-d.start} yr)<extra></extra>`,
+})), {
+  ...darkLayout,
+  barmode: 'stack',
+  xaxis: { ...darkLayout.xaxis, title: 'Year', range: [1860, 2030] },
+  yaxis: { ...darkLayout.yaxis, autorange: 'reversed' },
+  margin: { l: 140, r: 20, t: 10, b: 40 },
+}, config);
+
+// 12. Benchmark results
+Plotly.newPlot('chart-benchmark', [{
+  type: 'bar',
+  name: 'Same region',
+  x: ['EuroCropsML\n(full-shot)', 'EuroCropsML\n(10-shot)', 'CropHarvest\n(binary)', 'CropHarvest\n(multiclass)', 'DACIA5\n(S1+S2)', 'France→Kenya'],
+  y: [82, 50, 86, 72, 87, 88],
+  marker: { color: '#2ecc71' },
+}, {
+  type: 'bar',
+  name: 'Cross-region transfer',
+  x: ['EuroCropsML\n(full-shot)', 'EuroCropsML\n(10-shot)', 'CropHarvest\n(binary)', 'CropHarvest\n(multiclass)', 'DACIA5\n(S1+S2)', 'France→Kenya'],
+  y: [62, 35, 70, 55, null, 45],
+  marker: { color: '#e94560' },
+}], {
+  ...darkLayout,
+  barmode: 'group',
+  yaxis: { ...darkLayout.yaxis, title: 'Accuracy / F1 (%)', range: [0, 100] },
+  legend: { ...darkLayout.legend, x: 0.65, y: 0.95 },
+}, config);
+
+// 13. Phenological trends
+Plotly.newPlot('chart-trends', [
+  {
+    type: 'scatter', mode: 'lines+markers', name: 'NE China Maize — Sowing',
+    x: [1981,1990,2000,2010,2020,2024],
+    y: [135,133,130,126,123,121],
+    line: { color: '#2ecc71', width: 2 }, marker: { size: 6 },
+  },
+  {
+    type: 'scatter', mode: 'lines+markers', name: 'NE China Maize — Maturity',
+    x: [1981,1990,2000,2010,2020,2024],
+    y: [255,258,262,267,271,274],
+    line: { color: '#e94560', width: 2 }, marker: { size: 6 },
+  },
+  {
+    type: 'scatter', mode: 'lines+markers', name: 'HHH Wheat — Green-up',
+    x: [1981,1990,2000,2010,2021],
+    y: [60,57,53,49,45],
+    line: { color: '#3498db', width: 2, dash: 'dash' }, marker: { size: 6 },
+  },
+  {
+    type: 'scatter', mode: 'lines+markers', name: 'HHH Wheat — Heading',
+    x: [1981,1990,2000,2010,2021],
+    y: [130,128,126,123,121],
+    line: { color: '#f1c40f', width: 2, dash: 'dash' }, marker: { size: 6 },
+  },
+], {
+  ...darkLayout,
+  xaxis: { ...darkLayout.xaxis, title: 'Year' },
+  yaxis: { ...darkLayout.yaxis, title: 'Day of Year (DOY)' },
+  legend: { ...darkLayout.legend, x: 0.01, y: 0.99 },
+  annotations: [
+    { x: 2010, y: 148, text: '↕ Growing season<br>lengthening', showarrow: false, font:{color:'#888',size:10} },
+  ],
+}, config);
+</script>
+
+</body>
+</html>

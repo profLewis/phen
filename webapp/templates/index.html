@@ -15,6 +15,23 @@ body { font-family: -apple-system, system-ui, sans-serif; font-size:13px; backgr
 .main { flex:1; display:flex; flex-direction:column; }
 #map { height:40%; min-height:200px; }
 .charts { flex:1; overflow-y:auto; padding:8px; }
+.sidebar-toggle { display:none; position:fixed; top:8px; left:8px; z-index:1000; background:#e94560; color:white;
+  border:none; border-radius:4px; padding:6px 10px; font-size:16px; cursor:pointer; width:auto; box-shadow:0 2px 6px rgba(0,0,0,0.4); }
+.sidebar-toggle:hover { background:#c81e45; }
+@media (max-width:768px) {
+  .layout { flex-direction:column; }
+  .sidebar { width:100%; min-width:0; max-height:60vh; border-right:none; border-bottom:1px solid #333;
+    position:fixed; top:0; left:0; right:0; z-index:999; transform:translateY(-100%); transition:transform 0.25s ease; }
+  .sidebar.open { transform:translateY(0); }
+  .sidebar-toggle { display:block; }
+  .main { height:100vh; }
+  #map { height:50%; }
+  .charts { flex:1; }
+  h1 { font-size:14px; }
+  .refs-section { display:none; }
+  .dataset-panel .ds-desc { display:none; }
+  .dataset-panel .ds-source { display:none; }
+}
 h1 { font-size:16px; margin-bottom:6px; color:#a8dadc; }
 h2 { font-size:12px; margin:8px 0 3px; color:#a8dadc; text-transform:uppercase; letter-spacing:0.5px; }
 label { display:block; margin:2px 0 1px; font-size:11px; color:#999; }
@@ -51,6 +68,14 @@ button:disabled { background:#555; cursor:wait; }
 .dataset-panel .ds-status { font-size:10px; }
 .ds-avail { color:#2ecc71; }
 .ds-unavail { color:#e74c3c; }
+.ds-toggle { cursor:pointer; user-select:none; }
+.ds-toggle:hover { background:#0f3460; border-radius:3px; }
+.ds-toggle .ds-check { display:inline-block; width:14px; text-align:center; margin-right:3px; font-size:12px; }
+.ds-toggle.active .ds-check { color:#2ecc71; }
+.ds-toggle:not(.active) .ds-check { color:#555; }
+.ds-sites { max-height:100px; overflow-y:auto; margin:2px 0 0 17px; }
+.ds-sites .loc-item { padding:1px 4px; cursor:pointer; border-radius:2px; font-size:10px; color:#999; }
+.ds-sites .loc-item:hover { background:#0f3460; color:#e0e0e0; }
 a { color:#4ecdc4; }
 .fit-info { font-size:10px; color:#888; margin:2px 0; }
 .collapsible { cursor:pointer; user-select:none; }
@@ -61,11 +86,13 @@ a { color:#4ecdc4; }
 </style>
 </head>
 <body>
+<button class="sidebar-toggle" id="sidebarToggle" onclick="document.querySelector('.sidebar').classList.toggle('open'); this.textContent = document.querySelector('.sidebar').classList.contains('open') ? '✕' : '☰'; setTimeout(function(){if(typeof map!=='undefined')map.invalidateSize()},300)">☰</button>
 <div class="layout">
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <h1>Phenology Explorer</h1>
     <p style="font-size:11px;color:#888;margin-bottom:6px">Click map to select pixel. <b>Shift-click</b> to add more locations for comparison. Data from
-      <a href="https://earth-search.aws.element84.com/v1" target="_blank">AWS Element84</a> (free, no login).</p>
+      <a href="https://earth-search.aws.element84.com/v1" target="_blank">AWS Element84</a> (free, no login).
+      <a href="/datasets" style="float:right">Dataset docs →</a></p>
 
     <div class="coords" id="coordsDisplay">No pixels selected</div>
 
@@ -96,7 +123,7 @@ a { color:#4ecdc4; }
     </div>
 
     <h2 class="collapsible" onclick="toggleSection(this)">Smoothing</h2>
-    <div class="collapse-body open">
+    <div class="collapse-body desktop-open">
       <label>Method</label>
       <select id="smoothMethod">
         <option value="savgol">Savitzky-Golay</option>
@@ -117,7 +144,7 @@ a { color:#4ecdc4; }
     </div>
 
     <h2 class="collapsible" onclick="toggleSection(this)">Outlier Detection</h2>
-    <div class="collapse-body open">
+    <div class="collapse-body desktop-open">
       <div class="row">
         <div><label>Method</label>
         <select id="outlierMethod">
@@ -132,7 +159,7 @@ a { color:#4ecdc4; }
     </div>
 
     <h2 class="collapsible" onclick="toggleSection(this)">Curve Fitting</h2>
-    <div class="collapse-body open">
+    <div class="collapse-body desktop-open">
       <label>Method</label>
       <select id="fitMethod" onchange="updateFitUI()">
         <option value="smooth">Smoothing only (SG / DCT)</option>
@@ -146,7 +173,7 @@ a { color:#4ecdc4; }
     </div>
 
     <h2 class="collapsible" onclick="toggleSection(this)">Phenometrics</h2>
-    <div class="collapse-body open">
+    <div class="collapse-body desktop-open">
       <label>Extraction from</label>
       <select id="phenoSource">
         <option value="smooth">Smoothed curve</option>
@@ -173,16 +200,11 @@ a { color:#4ecdc4; }
     <div class="fit-info" id="fitInfo"></div>
 
     <h2 class="collapsible" onclick="toggleSection(this)">Datasets</h2>
-    <div class="collapse-body open">
+    <div class="collapse-body desktop-open">
       <div class="dataset-panel" id="datasetPanel">Loading...</div>
     </div>
 
-    <h2 class="collapsible" onclick="toggleSection(this)">FlevoVision Sites</h2>
-    <div class="collapse-body open">
-      <div class="loc-list" id="locList">Loading...</div>
-    </div>
-
-    <div style="margin-top:12px;font-size:10px;color:#555;border-top:1px solid #333;padding-top:6px">
+    <div class="refs-section" style="margin-top:12px;font-size:10px;color:#555;border-top:1px solid #333;padding-top:6px">
       <b>References:</b><br>
       <a href="https://doi.org/10.1016/j.compag.2022.106882" target="_blank">D'Andrimont et al. (2022)</a> — FlevoVision crop phenology<br>
       <a href="https://doi.org/10.3389/fenvs.2023.1097249" target="_blank">Zeng et al. (2023)</a> — Phenology extraction methods<br>
@@ -209,6 +231,20 @@ function toggleSection(el) {
   el.classList.toggle('open');
   el.nextElementSibling.classList.toggle('open');
 }
+function isMobile() { return window.innerWidth <= 768; }
+// On load: open collapsible sections on desktop, keep collapsed on mobile
+(function() {
+  document.querySelectorAll('.collapse-body.desktop-open').forEach(el => {
+    if (!isMobile()) { el.classList.add('open'); el.previousElementSibling.classList.add('open'); }
+    el.classList.remove('desktop-open');
+  });
+})();
+function closeSidebarMobile() {
+  if (isMobile()) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarToggle').textContent = '☰';
+  }
+}
 
 // --- Map ---
 const map = L.map('map').setView([52.6, 5.7], 11);
@@ -227,6 +263,7 @@ let locations = [];  // [{lon, lat, marker, color}]
 
 map.on('click', function(e) {
   selectPixel(e.latlng.lng, e.latlng.lat, e.originalEvent.shiftKey);
+  closeSidebarMobile();
 });
 
 function selectPixel(lon, lat, addMode) {
@@ -253,56 +290,118 @@ function updateCoordsDisplay() {
 }
 
 // --- Dataset location layers ---
-const locMarkers = L.layerGroup().addTo(map);
-const dwdMarkers = L.layerGroup();
-const phenocamMarkers = L.layerGroup();
+const datasetLayers = {};  // id -> {group, color, loaded, visible}
+const LAYER_CONFIG = {
+  flevovision:  {url:'/api/flevovision_locations', color:'#4ecdc4', radius:4, defaultOn:true},
+  dwd_phenology:{url:'/api/dwd_locations',         color:'#e67e22', radius:4, defaultOn:false},
+  phenocam:     {url:'/api/phenocam_locations',     color:'#2ecc71', radius:6, defaultOn:false},
+};
 
-function addDatasetMarkers(url, group, color, prefix) {
-  fetch(url).then(r=>r.json()).then(locs => {
+function loadDatasetLayer(id, cfg) {
+  if (datasetLayers[id] && datasetLayers[id].loaded) return;
+  const group = datasetLayers[id]?.group || L.layerGroup();
+  datasetLayers[id] = datasetLayers[id] || {};
+  datasetLayers[id].group = group;
+  datasetLayers[id].color = cfg.color;
+
+  fetch(cfg.url).then(r=>r.json()).then(locs => {
     locs.forEach(loc => {
       const m = L.circleMarker([loc.lat, loc.lon], {
-        radius: prefix==='phenocam' ? 6 : 4, color, fillOpacity: 0.6, weight: 1
-      }).bindTooltip(`${prefix}: ${loc.code} (${loc.id})`);
+        radius: cfg.radius, color: cfg.color, fillOpacity: 0.6, weight: 1
+      }).bindTooltip(`${loc.code || loc.id} (${id})`);
       m.on('click', (e) => {
         selectPixel(loc.lon, loc.lat, e.originalEvent.shiftKey);
-        // Auto-extract if not shift-clicking
         if (!e.originalEvent.shiftKey) setTimeout(doExtract, 200);
       });
       group.addLayer(m);
     });
-    if (prefix === 'flevovision') {
-      const list = document.getElementById('locList');
-      list.innerHTML = '';
-      locs.forEach(loc => {
-        const div = document.createElement('div');
-        div.className = 'loc-item';
-        div.textContent = `${loc.code} (${loc.id})`;
-        div.onclick = (e) => { selectPixel(loc.lon, loc.lat, e.shiftKey); map.setView([loc.lat, loc.lon], 14); if(!e.shiftKey) setTimeout(doExtract,200); };
-        list.appendChild(div);
-      });
-    }
+    datasetLayers[id].loaded = true;
+    datasetLayers[id].locs = locs;
+    // Build site list in panel
+    buildSiteList(id, locs);
   });
 }
 
-addDatasetMarkers('/api/flevovision_locations', locMarkers, '#4ecdc4', 'flevovision');
-addDatasetMarkers('/api/dwd_locations', dwdMarkers, '#e67e22', 'dwd');
-addDatasetMarkers('/api/phenocam_locations', phenocamMarkers, '#2ecc71', 'phenocam');
+function buildSiteList(id, locs) {
+  const container = document.getElementById('sites-' + id);
+  if (!container || locs.length === 0) return;
+  // Only show site list for datasets with a manageable number of points
+  if (locs.length > 500) {
+    container.innerHTML = `<span style="color:#666">${locs.length} sites</span>`;
+    return;
+  }
+  container.innerHTML = '';
+  locs.forEach(loc => {
+    const div = document.createElement('div');
+    div.className = 'loc-item';
+    div.textContent = loc.code ? `${loc.code} (${loc.id})` : loc.id;
+    div.onclick = (e) => {
+      selectPixel(loc.lon, loc.lat, e.shiftKey);
+      map.setView([loc.lat, loc.lon], 14);
+      if (!e.shiftKey) setTimeout(doExtract, 200);
+    };
+    container.appendChild(div);
+  });
+}
+
+function toggleDatasetLayer(id) {
+  const dl = datasetLayers[id];
+  if (!dl) return;
+  const el = document.getElementById('ds-' + id);
+  if (dl.visible) {
+    map.removeLayer(dl.group);
+    dl.visible = false;
+    if (el) { el.classList.remove('active'); const c = el.querySelector('.ds-check'); if(c) c.textContent='◻'; }
+    const sites = document.getElementById('sites-' + id);
+    if (sites) sites.style.display = 'none';
+  } else {
+    dl.group.addTo(map);
+    dl.visible = true;
+    if (el) { el.classList.add('active'); const c = el.querySelector('.ds-check'); if(c) c.textContent='◼'; }
+    // Load if not yet loaded
+    const cfg = LAYER_CONFIG[id];
+    if (cfg && !dl.loaded) loadDatasetLayer(id, cfg);
+    const sites = document.getElementById('sites-' + id);
+    if (sites) sites.style.display = '';
+  }
+}
 
 L.control.layers(
-  {'OSM': osmLayer, 'Satellite': satLayer},
-  {'FlevoVision': locMarkers, 'DWD Germany': dwdMarkers, 'PhenoCam': phenocamMarkers},
-  {collapsed: true}
+  {'OSM': osmLayer, 'Satellite': satLayer}, {}, {collapsed: true}
 ).addTo(map);
 
 // --- Datasets ---
 fetch('/api/datasets').then(r=>r.json()).then(datasets => {
   const panel = document.getElementById('datasetPanel');
-  panel.innerHTML = datasets.map(d => `<div class="ds">
-    <span class="ds-name">${d.name}</span>
-    <span class="ds-status ${d.available?'ds-avail':'ds-unavail'}">${d.available?'available':'not downloaded'}</span>
-    <div class="ds-source">${d.region} — ${d.source}</div>
-    <div class="ds-desc">${d.desc}</div>
-  </div>`).join('');
+  panel.innerHTML = datasets.map(d => {
+    const hasLayer = !!LAYER_CONFIG[d.id];
+    const toggleClass = hasLayer ? 'ds-toggle' : '';
+    const layerColor = hasLayer ? LAYER_CONFIG[d.id].color : '';
+    const checkMark = hasLayer ? `<span class="ds-check">◻</span><span style="color:${layerColor};font-size:14px;margin-right:2px">●</span>` : '';
+    const onclick = hasLayer ? `onclick="toggleDatasetLayer('${d.id}')"` : '';
+    const sitesDiv = hasLayer ? `<div class="ds-sites" id="sites-${d.id}" style="display:none"></div>` : '';
+    return `<div class="ds ${toggleClass}" id="ds-${d.id}" ${onclick}>
+      ${checkMark}<span class="ds-name">${d.name}</span>
+      <span class="ds-status ${d.available?'ds-avail':'ds-unavail'}">${d.available?'available':'not downloaded'}</span>
+      <div class="ds-source">${d.region} — ${d.source}</div>
+      <div class="ds-desc">${d.desc}</div>
+      ${sitesDiv}
+    </div>`;
+  }).join('');
+
+  // Pre-initialise layer groups and load defaults
+  for (const [id, cfg] of Object.entries(LAYER_CONFIG)) {
+    datasetLayers[id] = {group: L.layerGroup(), loaded: false, visible: false, color: cfg.color};
+    if (cfg.defaultOn) {
+      datasetLayers[id].group.addTo(map);
+      datasetLayers[id].visible = true;
+      const el = document.getElementById('ds-' + id);
+      if (el) { el.classList.add('active'); const c = el.querySelector('.ds-check'); if(c) c.textContent='◼'; }
+      const sites = document.getElementById('sites-' + id);
+      if (sites) sites.style.display = '';
+      loadDatasetLayer(id, cfg);
+    }
+  }
 });
 
 // --- UI toggles ---
@@ -341,6 +440,7 @@ async function doExtract() {
     document.getElementById('status').textContent = 'Click the map first.';
     return;
   }
+  closeSidebarMobile();
   const btn = document.getElementById('extractBtn');
   const cancelBtn = document.getElementById('cancelBtn');
   btn.disabled = true; btn.textContent = 'Extracting...';
