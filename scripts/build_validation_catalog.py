@@ -441,6 +441,83 @@ def parse_senseco():
     return rows
 
 
+def parse_china_maize():
+    """Parse NE China Maize Phenology (1981-2024) from XLSX."""
+    xlsx_path = DATA / "china_maize_phenology" / "04_Phenology_ period _Data.xlsx"
+    coords_path = DATA / "china_maize_phenology" / "station_coordinates.csv"
+
+    if not xlsx_path.exists() or not coords_path.exists():
+        return []
+
+    # Load station coordinates
+    coords = {}
+    with open(coords_path) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            sid = int(row["station_id"])
+            coords[sid] = (float(row["lat"]), float(row["lon"]), row["name"])
+
+    try:
+        import openpyxl
+    except ImportError:
+        print("    (openpyxl not installed, skipping China Maize)")
+        return []
+
+    # Phase name to approx BBCH mapping for maize
+    phase_bbch = {
+        "SO": "0",    # sowing
+        "EM": "10",   # emergence
+        "TS": "13",   # three-leaf
+        "SL": "17",   # seven-leaf
+        "JO": "31",   # jointing
+        "TA": "51",   # tasseling
+        "FL": "61",   # flowering
+        "SI": "63",   # silking
+        "MI": "73",   # milking
+        "MA": "87",   # maturity
+    }
+
+    rows = []
+    wb = openpyxl.load_workbook(xlsx_path, read_only=True)
+    ws = wb["Feuil1"]
+
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        province, sid, name, phase = row[0], row[1], row[2], row[3]
+        if not sid or not phase:
+            continue
+        sid = int(sid)
+        if sid not in coords:
+            continue
+
+        lat, lon, eng_name = coords[sid]
+        intercept = row[4]  # DOY intercept (1981 baseline)
+        trend = row[5]      # DOY change per year
+
+        bbch = phase_bbch.get(phase, "")
+
+        # The intercept represents the mean DOY for ~year 2000
+        # (midpoint of 1981-2024 regression)
+        mean_doy = int(round(intercept + trend * 20)) if intercept else 0
+
+        rows.append({
+            "dataset": "china_maize",
+            "location_id": f"china_{sid}_{eng_name}",
+            "lat": lat,
+            "lon": lon,
+            "crop_type": "maize",
+            "date_start": "",
+            "date_end": "",
+            "year": 0,  # multi-decadal (1981-2024)
+            "measure_type": "phenophase_doy_trend",
+            "measure_value": f"{phase}={mean_doy}doy trend={trend:.3f}d/yr",
+            "measure_unit": "DOY",
+            "bbch": bbch,
+            "notes": f"province={province} station={sid} intercept={intercept:.1f} R2={row[7]:.3f}" if row[7] else "",
+        })
+
+    return rows
+
+
 def parse_kenya():
     """Parse Kenya Helmets crop type points."""
     kenya_csv = DATA / "kenya_helmets" / "Helmets_Kenya_v2.csv"
@@ -535,6 +612,7 @@ def main():
         ("DWD", parse_dwd),
         ("PhenoCam", parse_phenocam),
         ("SenSeCo", parse_senseco),
+        ("China Maize", parse_china_maize),
         ("Kenya Helmets", parse_kenya),
     ]
 
