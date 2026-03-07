@@ -1,0 +1,86 @@
+#---
+#project_code: In-situ crop phenology
+#short_name: SENSECO COST Action CA17134
+#long_name: Optical synergies for spatiotemporal SENsing of Scalable ECOphysiological traits 
+#doi: 
+#spectra_methods: Non
+#comment: phenology, in-situ, crops, canopy, seasons, field observations, phenocam, digital camera, photo, growth, sowing, phenophase, harvest
+#resources:
+#    name: record
+#    type: number
+#  - name: country
+#    type: character
+#  - name: site
+#    type: character
+#  - name: plot_ID
+#    type: character
+#  - name: area
+#    type: number
+#    data_unit:'ha'
+#  - name: latitude
+#    type: number
+#    data_unit:'decimal degrees'
+#  - name: longitude
+#    type: number
+#    data_unit:'decimal degrees'
+#  - name: crop_type
+#    type: character
+#  - name: crop_genus
+#    type: character
+#  - name: season
+#    type: year
+#  - name: sowing_date
+#    type: date
+#  - name: harvest_date
+#    type: date
+#  - name: phenophase_date
+#    type: date
+#  - name: phenophase	
+#    type: character
+#  - name: method_phenophase	
+#    type: character
+#  - name: equipment_method_phenophase	
+#    type: character
+#  - name: photo_available	
+#    type: character
+#  - name: photo_ID	
+#    type: character
+#  - name: plot_shape_ID	
+#    type: character
+#---
+record,country,site,plot_ID,area,latitude,longitude,crop_type,crop_genus,season,sowing_date,harvest_date,phenophase_date,phenophase,method_phenophase,equipment_method_phenophase,photo_available,photo_ID,plot_shape_ID
+1,France,Auradé,FR-Aur,23,43.5495,1.1061,sunflower,Helianthus,2015/2016,2016-04-20,2016-09-23,2016-05-08,BBCH12,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Aur_sunflower_20160508;FR-Aur_sunflower_20160509;FR-Aur_sunflower_20160510;FR-Aur_sunflower_20160512;FR-Aur_sunflower_20160510_plant,Plot_FR-Aur_polygon
+2,France,Auradé,FR-Aur,23,43.5495,1.1061,winter_wheat,Triticum,2016/2017,2016-12-02,2017-07-06,2016-12-14,BBCH11,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Aur_winter_wheat_20161214;FR-Aur_winter_wheat_20161214(2);FR-Aur_winter_wheat_20161214_plant,Plot_FR-Aur_polygon
+3,France,Auradé,FR-Aur,23,43.5495,1.1061,winter_rapeseed,Brassica,2017/2018,2017-09-05,2018-06-30,2017-09-13,BBCH10,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Aur_winter_rapeseed_20170913;FR-Aur_winter_rapeseed_20170913(2);FR-Aur_winter_rapeseed_20170913_plant;FR-Aur_winter_rapeseed_20170913_plant(2),Plot_FR-Aur_polygon
+4,France,Auradé,FR-Aur,23,43.5495,1.1061,winter_wheat,Triticum,2018/2019,2018-10-23,2019-07-05,2018-11-15,BBCH11,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Aur_winter_wheat_20181120;FR-Aur_winter_wheat_20181122;FR-Aur_winter_wheat_20181122_plant,Plot_FR-Aur_polygon
+5,France,Auradé,FR-Aur,23,43.5495,1.1061,faba_bean,Vicia,2019/2020,2019-10-23,2020-04-08,2019-11-02,BBCH10,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Aur_faba_bean_20191102;FR-Aur_faba_bean_20191114,Plot_FR-Aur_polygon
+6,France,Auradé,FR-Aur,23,43.5495,1.1061,sunflower,Helianthus,2019/2020,2020-04-20,2020-09-11,2020-05-07,BBCH12,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Aur_sunflower_20200507;FR-Aur_sunflower_20200508;FR-Aur_sunflower_20200518;FR-Aur_sunflower_20200518(2),Plot_FR-Aur_polygon
+7,France,Auradé,FR-Aur,23,43.5495,1.1061,winter_wheat,Triticum,2020/2021,2020-11-16,2021-07-11,2020-11-28,BBCH12,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Aur_winter_wheat_20201128;FR-Aur_winter_wheat_20201130,Plot_FR-Aur_polygon
+8,France,Auradé,FR-Aur,23,43.5495,1.1061,sunflower,Helianthus,2021/2022,2022-04-11,2022-08-20,2022-04-27,BBCH10,picture;observation_on_site,digital_photo_camera;visual_observation,YES,FR-Aur_sunflower_20220427;FR-Aur_sunflower_20220427_plant,Plot_FR-Aur_polygon
+9,France,Lamasquère,FR-Lam,24,43.4992,1.2358,irrigated_silage_maize,Zea,2014/2015,2015-05-05,2015-09-08,2015-05-19,BBCH12,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Lam_irrigated_silage_maize_20150519;FR-Lam_irrigated_silage_maize_20150522;FR-Lam_irrigated_silage_maize_20150522_plant,Plot_FR-Lam_polygon
+10,France,Lamasquère,FR-Lam,24,43.4992,1.2358,winter_wheat,Triticum,2015/2016,2015-10-20,2016-07-20,2015-11-05,BBCH12,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Lam_winter_wheat_20151105,Plot_FR-Lam_polygon
+11,France,Lamasquère,FR-Lam,24,43.4992,1.2358,white_mustard_vetch,Sinapis_Vicia,2016/2017,2016-08-17,2016-11-18,2016-08-31,BBCH12,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Lam_white_mustard_vetch_20160831;FR-Lam_white_mustard_vetch_20160831(2),Plot_FR-Lam_polygon
+12,France,Lamasquère,FR-Lam,24,43.4992,1.2358,irrigated_silage_maize,Zea,2016/2017,2017-04-28,2017-09-05,2017-05-14,BBCH12,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Lam_irrigated_silage_maize_20170514;FR-Lam_irrigated_silage_maize_20170514(2);FR-Lam_irrigated_silage_maize_20170516;FR-Lam_irrigated_silage_maize_20170516(2),Plot_FR-Lam_polygon
+13,France,Lamasquère,FR-Lam,24,43.4992,1.2358,winter_wheat,Triticum,2017/2018,2017-11-16,2018-07-10,2017-12-22,BBCH12,observation_on_site,visual_observation,NO,NA,Plot_FR-Lam_polygon
+14,France,Lamasquère,FR-Lam,24,43.4992,1.2358,irrigated_silage_maize,Zea,2018/2019,2019-04-22,2019-09-09,2019-05-11,BBCH12,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Lam_irrigated_silage_maize_20190510;FR-Lam_irrigated_silage_maize_20190510(2);FR-Lam_irrigated_silage_maize_20190513;FR-Lam_irrigated_silage_maize_20190513_plant,Plot_FR-Lam_polygon
+15,France,Lamasquère,FR-Lam,24,43.4992,1.2358,winter_wheat,Triticum,2019/2020,2019-10-19,2020-07-03,2019-10-29,BBCH11,picture;observation_on_site,phenocam;visual_observation,YES,FR-Lam_winter_wheat_20191029;FR-Lam_winter_wheat_20191030,Plot_FR-Lam_polygon
+16,France,Lamasquère,FR-Lam,24,43.4992,1.2358,faba_bean_phacelia,Vicia_Phacelia,2020/2021,2020-11-07,2021-04-14,2020-12-07,BBCH12,picture;observation_on_site,digital_photo_camera;visual_observation,YES,FR-Lam_faba_bean_phacelia_20201214;FR-Lam_faba_bean_phacelia_20201214_plant,Plot_FR-Lam_polygon
+17,France,Lamasquère,FR-Lam,24,43.4992,1.2358,irrigated_silage_maize,Zea,2020/2021,2021-04-18,2021-09-20,2021-05-09,BBCH10,picture;observation_on_site,phenocam;digital_photo_camera;visual_observation,YES,FR-Lam_irrigated_silage_maize_20210510;FR-Lam_irrigated_silage_maize_20210512;FR-Lam_irrigated_silage_maize_20210512(2),Plot_FR-Lam_polygon
+18,France,Lamasquère,FR-Lam,24,43.4992,1.2358,winter_wheat,Triticum,2021/2022,2021-10-24,2022-07-07,2021-11-09,BBCH11,picture;observation_on_site,phenocam;visual_observation,YES,FR-Lam_winter_wheat_20211110,Plot_FR-Lam_polygon
+19,Bulgaria,Oborishte,P0,16,43.4676,27.6658,winter_rapeseed,Brassica,2016/2017,2016-09-02,2017-07-12,2016-10-02,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P0_polygon
+20,Bulgaria,Gurkovo,P01,26,43.5027,28.2244,winter_rapeseed,Brassica,2016/2017,2016-09-21,NA,2016-10-22,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P01_polygon
+21,Bulgaria,Trigorci,P02,44,43.5624,28.2005,winter_rapeseed,Brassica,2016/2017,2016-09-17,NA,2016-10-20,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P02_polygon
+22,Bulgaria,General_Kiselovo,P1,120,43.4837,27.6311,winter_rapeseed,Brassica,2017/2018,2017-09-04,2018-07-02,2017-11-06,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P1_polygon
+23,Bulgaria,General_Kiselovo,P2,11,43.4638,27.6174,winter_rapeseed,Brassica,2017/2018,2017-08-20,2018-07-03,2017-10-18,BBCH12,observation_on_site,visual_observation,NO,NA,Plot_P2_polygon
+24,Bulgaria,Oborishte,P3,16,43.4726,27.6831,winter_rapeseed,Brassica,2017/2018,2017-09-04,2018-07-04,2017-10-30,BBCH12,observation_on_site,visual_observation,NO,NA,Plot_P3_polygon
+25,Bulgaria,Dobrich,P4,3,43.5263,27.8149,winter_rapeseed,Brassica,2018/2019,2018-09-10,NA,2018-11-06,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P4_polygon
+26,Bulgaria,Gurkovo,P13,20,43.4931,28.2323,winter_rapeseed,Brassica,2015/2016,2015-09-09,NA,2015-10-22,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P13_polygon
+27,Bulgaria,Mirovci,P14,69,43.4317,27.2595,winter_rapeseed,Brassica,2015/2016,2015-09-08,2016-07-25,NA,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P14_polygon
+28,Bulgaria,Neofit_Rilski,P15,109,43.2926,27.4952,winter_rapeseed,Brassica,2015/2016,2015-09-16,2016-07-05,NA,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P15_polygon
+29,Bulgaria,Boyana,P17,9,43.4441,27.6366,winter_rapeseed,Brassica,2015/2016,2015-09-10,2016-07-06,NA,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P17_polygon
+30,Bulgaria,Dobrich,P18,7,43.5295,27.814,winter_wheat,Triticum,2018/2019,2018-10-05,NA,2018-12-03,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P18_polygon
+31,Bulgaria,Gurkovo,P19,16,43.4721,28.2294,winter_rapeseed,Brassica,2015/2016,2015-09-05,NA,2015-10-22,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P19_polygon
+32,Bulgaria,Gurkovo,P20,19,43.5099,28.2374,winter_rapeseed,Brassica,2015/2016,2015-09-03,NA,2015-11-03,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P20_polygon
+33,Bulgaria,Gurkovo,P22,37,43.5018,28.2771,winter_rapeseed,Brassica,2015/2016,2015-09-05,NA,2015-11-04,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P22_polygon
+34,Bulgaria,Gurkovo,P23,28,43.4752,28.2714,winter_rapeseed,Brassica,2015/2016,2015-09-07,NA,2015-10-22,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P23_polygon
+35,Bulgaria,Gurkovo,P24,9,43.4842,28.2784,winter_rapeseed,Brassica,2015/2016,2015-09-06,NA,2015-11-04,BBCH13,observation_on_site,visual_observation,NO,NA,Plot_P24_polygon

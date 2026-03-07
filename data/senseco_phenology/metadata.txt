@@ -1,0 +1,37 @@
+#---
+#project_code: In-situ crop phenology
+#short_name: SENSECO COST Action CA17134
+#long_name: Optical synergies for spatiotemporal SENsing of Scalable ECOphysiological traits 
+#doi: 
+#spectra_methods: Non
+#comment: phenology, in-situ, crops, canopy, seasons, field observations, phenocam, digital camera, photo, growth, sowing, phenophase, harvest
+#resources:
+#  fields: 19
+#  - name: N
+#    type: number
+#  - name: variable
+#    type: character
+#  - name: description
+#    type: character
+#
+#---
+N,variable,description
+1,record,number associated to individual record
+2,country,country of the crop observations
+3,site,name of the site of the crop observations 	
+4,plot_ID,code associated to each crop plot	
+5,area,area of each crop plot in hectares (ha)
+6,latitude,latitude of each crop plot in decimals degrees
+7,longitude,longitude of each crop plot in decimal degrees	
+8,crop_type,common name of each crop	
+9,crop_genus,genus name of each crop
+10,season,season of each crop plot in years (yyyy/yyyy)
+11,sowing_date,sowing date of each crop plot and each season (yyyy-mm-dd)
+12,harvest_date,harvest date of each crop plot and each season (yyyy-mm-dd)
+13,phenophase_date,phenophase date of each crop plot and season (yyyy-mm-dd) corresponding to BBCH10-13 
+14,phenophase,corresponds to BBCH10-13 of each crop plot and each season
+15,method_phenophase,method used to register the corresponding "Phenophase" of each crop plot and each season
+16,equipment_method_phenophase,equipment used on "method_phenophase" to register the "phenophase" of each crop plot each season
+17,photo_available,availability of photos for each crop plot and each season
+18,photo_ID,Id of each photo of each crop plot and each season in 'jpg' format
+19,plot_shape_ID, name of the georeferenced plot in 'geojson' and 'csv' format
