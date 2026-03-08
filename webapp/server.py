@@ -1115,6 +1115,39 @@ def api_check_cache():
     return jsonify({"cached_scenes": count, "lon": lon, "lat": lat})
 
 
+@app.route("/api/dataset_locations/<dataset_id>")
+def dataset_locations(dataset_id):
+    """Return locations for any dataset from validation_locations.csv."""
+    import csv
+
+    csv_path = ROOT / "data" / "validation_locations.csv"
+    if not csv_path.exists():
+        return jsonify([])
+
+    seen = set()
+    locations = []
+    with open(csv_path, newline="") as f:
+        for row in csv.DictReader(f):
+            if row["dataset"] != dataset_id:
+                continue
+            lid = row["location_id"]
+            if lid in seen:
+                continue
+            seen.add(lid)
+            try:
+                lat = float(row["lat"])
+                lon = float(row["lon"])
+            except (ValueError, TypeError):
+                continue
+            locations.append({
+                "id": lid,
+                "lat": lat,
+                "lon": lon,
+                "code": row.get("crop_type", lid),
+            })
+    return jsonify(locations)
+
+
 @app.route("/api/datasets")
 def api_datasets():
     """Available phenology datasets and their status."""
