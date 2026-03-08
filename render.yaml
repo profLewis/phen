@@ -1,5 +1,10 @@
 services:
   - type: web
-    name: phenology-explorer
-    runtime: docker
+    name: phen
+    runtime: python
     rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn webapp.server:app --bind 0.0.0.0:$PORT --timeout 300 --workers 2 --threads 4
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
