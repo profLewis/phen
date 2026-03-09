@@ -23,12 +23,20 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Data (large downloads not stored in git)
-data/
-# But keep small reference datasets in git
+# Data — ignore large/downloaded files, but keep core server data
+data/*
 !data/china_maize_phenology/
 !data/senseco_phenology/
 !data/flevovision/
+!data/dwd_phenology/
+!data/phenocam/
+!data/kenya_helmets/
+!data/validation_locations.csv
+!data/validation_catalog.csv
+!data/ATTRIBUTION.md
+!data/cache/
+data/cache/*
+!data/cache/.gitkeep
 
 # Output
 output/
