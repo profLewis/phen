@@ -248,7 +248,11 @@ a { color:#4ecdc4; }
           <input type="range" class="chip-slider" id="chipSlider" min="0" max="0" value="0" oninput="selectChip(parseInt(this.value))">
           <div class="chip-info" id="chipInfo"></div>
         </div>
-        <div class="chip-strip" id="chipStrip"></div>
+        <div style="display:flex;gap:8px;align-items:flex-start;">
+          <img id="chipPreview" style="width:128px;height:128px;border-radius:4px;border:2px solid #333;
+            image-rendering:pixelated;display:none;flex-shrink:0;" alt="chip">
+          <div class="chip-strip" id="chipStrip" style="flex:1;"></div>
+        </div>
       </div>
       <div class="chart-box" id="bandChart" style="height:220px"></div>
       <div class="legend" id="phenoInfo"></div>
@@ -351,7 +355,11 @@ function loadDatasetLayer(id, andZoom) {
       }).bindTooltip(`${loc.code || loc.id}`);
       m.on('click', (e) => {
         selectPixel(loc.lon, loc.lat, e.originalEvent.shiftKey);
-        if (!e.originalEvent.shiftKey) setTimeout(doExtract, 200);
+        if (!e.originalEvent.shiftKey) {
+          // Try loading pre-downloaded chips for this location
+          loadChipsForLocation(id, loc.id);
+          setTimeout(doExtract, 200);
+        }
       });
       dl.group.addLayer(m);
     });
@@ -886,10 +894,55 @@ let chipIndex = 0;
 let chipAnimTimer = null;
 let chipAnimInterval = 300;
 
-function buildChipStrip(results) {
+let chipImageMode = false;
+let chipBaseUrl = '';
+let pendingChipLocation = null;  // {dataset, locId} set when marker clicked
+
+function loadChipsForLocation(dataset, locId) {
+  pendingChipLocation = {dataset, locId};
+  // Immediately show chips if available (don't wait for extraction)
+  fetch(`/api/chips/${dataset}/${locId}`).then(r => r.json()).then(dates => {
+    if (!dates || dates.length === 0) return;
+    chipBaseUrl = `/api/chip/${dataset}/${locId}`;
+    chipImageMode = true;
+    chipData = dates.map(d => {
+      const dt = new Date(d + 'T00:00:00');
+      const doy = Math.floor((dt - new Date(dt.getFullYear(),0,0)) / 86400000);
+      return {date: d, doy, ndvi: null, scl: null, is_clear: true, cloud_cover: null, hasImage: true};
+    });
+    const viewer = document.getElementById('chipViewer');
+    const strip = document.getElementById('chipStrip');
+    const slider = document.getElementById('chipSlider');
+    const preview = document.getElementById('chipPreview');
+    viewer.style.display = '';
+    strip.innerHTML = '';
+    slider.max = chipData.length - 1;
+    slider.value = 0;
+    chipData.forEach((c, i) => {
+      const div = document.createElement('div');
+      div.className = 'chip';
+      const img = document.createElement('img');
+      img.src = `${chipBaseUrl}/${c.date}.jpg`;
+      img.style.cssText = 'width:100%;height:100%;border-radius:2px;image-rendering:pixelated;';
+      img.loading = 'lazy';
+      div.appendChild(img);
+      const lbl = document.createElement('div');
+      lbl.className = 'chip-date';
+      lbl.textContent = c.date.slice(5);
+      div.appendChild(lbl);
+      div.onclick = () => selectChip(i);
+      div.title = c.date;
+      strip.appendChild(div);
+    });
+    selectChip(0);
+  }).catch(() => {});
+}
+
+async function buildChipStrip(results) {
   const viewer = document.getElementById('chipViewer');
   const strip = document.getElementById('chipStrip');
   const slider = document.getElementById('chipSlider');
+  const preview = document.getElementById('chipPreview');
   if (!results || results.length === 0) { viewer.style.display = 'none'; return; }
 
   // Use first location's raw data
@@ -900,11 +953,49 @@ function buildChipStrip(results) {
       date: r.date, doy: r.doy, ndvi: r.ndvi, scl: r.scl, is_clear: r.is_clear,
       is_outlier: r.is_outlier, cloud_cover: r.cloud_cover,
       B02: r.B02, B03: r.B03, B04: r.B04, B08: r.B08,
-      hasTrueColor,
+      hasTrueColor, hasImage: false,
     };
   });
 
   if (chipData.length === 0) { viewer.style.display = 'none'; return; }
+
+  // Check if pre-downloaded chips exist for this location
+  chipImageMode = false;
+  chipBaseUrl = '';
+  preview.style.display = 'none';
+  try {
+    // If we know the exact dataset/location (from marker click), use it directly
+    if (pendingChipLocation) {
+      const {dataset, locId} = pendingChipLocation;
+      const dates = await fetch(`/api/chips/${dataset}/${locId}`).then(r => r.json());
+      if (dates && dates.length > 0) {
+        chipBaseUrl = `/api/chip/${dataset}/${locId}`;
+        chipImageMode = true;
+        const availDates = new Set(dates);
+        chipData.forEach(c => { c.hasImage = availDates.has(c.date); });
+      }
+      pendingChipLocation = null;
+    } else {
+      // Fallback: check index for date overlap matching
+      const idx = await fetch('/api/chips/index').then(r => r.json());
+      if (idx && Object.keys(idx).length > 0) {
+        const ourDates = new Set(chipData.map(c => c.date));
+        let bestOverlap = 0, bestDs = '', bestLid = '';
+        for (const [ds, locs] of Object.entries(idx)) {
+          for (const [lid, dates] of Object.entries(locs)) {
+            const overlap = dates.filter(d => ourDates.has(d)).length;
+            if (overlap > bestOverlap) { bestOverlap = overlap; bestDs = ds; bestLid = lid; }
+          }
+        }
+        if (bestOverlap > chipData.length * 0.2) {
+          chipBaseUrl = `/api/chip/${bestDs}/${bestLid}`;
+          chipImageMode = true;
+          const availDates = new Set(idx[bestDs][bestLid]);
+          chipData.forEach(c => { c.hasImage = availDates.has(c.date); });
+        }
+      }
+    }
+  } catch(e) { /* no chips available */ }
 
   viewer.style.display = '';
   strip.innerHTML = '';
@@ -914,23 +1005,34 @@ function buildChipStrip(results) {
   chipData.forEach((c, i) => {
     const div = document.createElement('div');
     div.className = 'chip' + (c.is_clear ? '' : ' cloudy');
-    div.style.background = chipColor(c);
+
+    if (chipImageMode && c.hasImage) {
+      // Use actual image chip as thumbnail
+      const img = document.createElement('img');
+      img.src = `${chipBaseUrl}/${c.date}.jpg`;
+      img.style.cssText = 'width:100%;height:100%;border-radius:2px;image-rendering:pixelated;';
+      img.loading = 'lazy';
+      div.appendChild(img);
+    } else {
+      div.style.background = chipColor(c);
+    }
+
     div.onclick = () => selectChip(i);
     div.title = `${c.date} NDVI=${c.ndvi?.toFixed(3)} SCL=${c.scl}`;
 
     // Date label
     const lbl = document.createElement('div');
     lbl.className = 'chip-date';
-    lbl.textContent = c.date.slice(5); // MM-DD
+    lbl.textContent = c.date.slice(5);
     div.appendChild(lbl);
 
-    // NDVI bar on left edge
+    // NDVI bar
     const bar = document.createElement('div');
     bar.className = 'chip-ndvi-bar';
-    const ndviClamped = Math.max(0, Math.min(1, c.ndvi || 0));
-    bar.style.background = ndviColorScale(ndviClamped);
-    bar.style.height = (ndviClamped * 100) + '%';
-    bar.style.top = ((1 - ndviClamped) * 100) + '%';
+    const nv = Math.max(0, Math.min(1, c.ndvi || 0));
+    bar.style.background = ndviColorScale(nv);
+    bar.style.height = (nv * 100) + '%';
+    bar.style.top = ((1 - nv) * 100) + '%';
     div.appendChild(bar);
 
     strip.appendChild(div);
@@ -971,27 +1073,34 @@ function selectChip(idx) {
   for (let i = 0; i < chips.length; i++) {
     chips[i].classList.toggle('selected', i === idx);
   }
-  // Scroll selected into view
   if (chips[idx]) chips[idx].scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
 
-  // Update info
   const c = chipData[idx];
   const info = document.getElementById('chipInfo');
-  const sclName = SCL_NAMES[c.scl] || '?';
-  info.innerHTML = `<b>${c.date}</b> DOY ${c.doy} | NDVI ${c.ndvi?.toFixed(3)} | SCL ${c.scl} (${sclName})` +
-    (c.cloud_cover != null ? ` | ${c.cloud_cover.toFixed(0)}% cloud` : '');
+  const sclName = c.scl != null ? SCL_NAMES[c.scl] || '?' : '';
+  let infoHtml = `<b>${c.date}</b> DOY ${c.doy}`;
+  if (c.ndvi != null) infoHtml += ` | NDVI ${c.ndvi.toFixed(3)}`;
+  if (c.scl != null) infoHtml += ` | SCL ${c.scl} (${sclName})`;
+  if (c.cloud_cover != null) infoHtml += ` | ${c.cloud_cover.toFixed(0)}% cloud`;
+  infoHtml += ` | ${idx+1}/${chipData.length}`;
+  info.innerHTML = infoHtml;
 
-  // Sync with NDVI chart — move a vertical indicator
+  // Show large preview if image chips available
+  const preview = document.getElementById('chipPreview');
+  if (chipImageMode && c.hasImage) {
+    preview.src = `${chipBaseUrl}/${c.date}.jpg`;
+    preview.style.display = '';
+  } else {
+    preview.style.display = 'none';
+  }
+
+  // Sync vertical indicator on NDVI chart
   const ndviChart = document.getElementById('ndviChart');
-  if (ndviChart && ndviChart.data) {
-    Plotly.relayout('ndviChart', {
-      'shapes[-1]': undefined  // remove previous indicator
-    }).catch(()=>{});
-    Plotly.relayout('ndviChart', {
-      shapes: [...(ndviChart.layout.shapes || []).filter(s => !s._chipIndicator),
-        {type:'line', x0:c.doy, x1:c.doy, y0:-0.2, y1:1,
-         line:{color:'#f1c40f', width:2}, _chipIndicator:true}]
-    }).catch(()=>{});
+  if (ndviChart && ndviChart.layout) {
+    const existingShapes = (ndviChart.layout.shapes || []).filter(s => !s._chipIndicator);
+    existingShapes.push({type:'line', x0:c.doy, x1:c.doy, y0:-0.2, y1:1,
+      line:{color:'#f1c40f', width:2}, _chipIndicator:true});
+    Plotly.relayout('ndviChart', {shapes: existingShapes}).catch(()=>{});
   }
 }
 

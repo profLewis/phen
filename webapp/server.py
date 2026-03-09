@@ -1115,6 +1115,36 @@ def api_check_cache():
     return jsonify({"cached_scenes": count, "lon": lon, "lat": lat})
 
 
+@app.route("/api/chips/<dataset>/<location_id>")
+def api_chips_list(dataset, location_id):
+    """List available RGB chip dates for a location."""
+    chip_dir = ROOT / "data" / "s2_chips_rgb" / dataset / location_id
+    if not chip_dir.is_dir():
+        return jsonify([])
+    dates = sorted(f.stem for f in chip_dir.glob("*.jpg"))
+    return jsonify(dates)
+
+
+@app.route("/api/chip/<dataset>/<location_id>/<date>.jpg")
+def api_chip_image(dataset, location_id, date):
+    """Serve a single RGB chip image."""
+    from flask import send_from_directory
+    chip_dir = ROOT / "data" / "s2_chips_rgb" / dataset / location_id
+    filename = f"{date}.jpg"
+    if not (chip_dir / filename).exists():
+        return "Not found", 404
+    return send_from_directory(str(chip_dir), filename, mimetype="image/jpeg")
+
+
+@app.route("/api/chips/index")
+def api_chips_index():
+    """Return the chip index JSON if available."""
+    idx_path = ROOT / "data" / "s2_chips_rgb" / "chip_index.json"
+    if not idx_path.exists():
+        return jsonify({})
+    return Response(idx_path.read_text(), mimetype="application/json")
+
+
 @app.route("/api/dataset_locations/<dataset_id>")
 def dataset_locations(dataset_id):
     """Return locations for any dataset from validation_locations.csv."""
