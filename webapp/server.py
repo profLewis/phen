@@ -499,6 +499,11 @@ def datasets_analysis_page():
     return render_template("datasets_analysis.html")
 
 
+@app.route("/chips")
+def chips_gallery_page():
+    return render_template("chips.html")
+
+
 @app.route("/api/extract", methods=["POST"])
 def api_extract():
     """Stream extraction progress and results as NDJSON."""

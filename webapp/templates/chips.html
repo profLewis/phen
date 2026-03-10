@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S2 Chip Gallery — Phenology Explorer</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,system-ui,sans-serif; background:#1a1a2e; color:#e0e0e0; padding:16px; }
+h1 { font-size:18px; color:#a8dadc; margin-bottom:4px; }
+h2 { font-size:14px; color:#4ecdc4; margin:16px 0 6px; border-bottom:1px solid #333; padding-bottom:4px; }
+h3 { font-size:12px; color:#f1c40f; margin:10px 0 4px; }
+a { color:#4ecdc4; }
+.summary { font-size:12px; color:#888; margin-bottom:12px; }
+.controls { display:flex; gap:8px; align-items:center; margin:8px 0; flex-wrap:wrap; }
+.controls button { padding:4px 12px; background:#0f3460; color:#e0e0e0; border:1px solid #444;
+  border-radius:4px; cursor:pointer; font-size:12px; }
+.controls button:hover { background:#1a5276; }
+.controls button.active { background:#e94560; border-color:#e94560; }
+.controls select { padding:3px 6px; background:#0f3460; border:1px solid #444; color:#e0e0e0;
+  border-radius:4px; font-size:12px; }
+.loc-section { background:#16213e; border-radius:6px; padding:8px 12px; margin-bottom:8px; }
+.loc-header { display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+.loc-header:hover { color:#f1c40f; }
+.loc-meta { font-size:11px; color:#888; }
+.strip { display:flex; gap:2px; overflow-x:auto; padding:4px 0; scrollbar-width:thin; }
+.strip::-webkit-scrollbar { height:6px; }
+.strip::-webkit-scrollbar-thumb { background:#444; border-radius:3px; }
+.chip { width:56px; min-width:56px; height:56px; border-radius:3px; cursor:pointer;
+  border:2px solid transparent; position:relative; overflow:hidden; transition:all 0.15s; }
+.chip:hover { transform:scale(1.2); z-index:1; }
+.chip.selected { border-color:#f1c40f; transform:scale(1.2); z-index:2; }
+.chip img { width:100%; height:100%; image-rendering:pixelated; display:block; }
+.chip-lbl { font-size:7px; color:#fff; text-align:center; position:absolute; bottom:0; left:0; right:0;
+  background:rgba(0,0,0,0.6); line-height:1.2; padding:1px 0; }
+.preview-area { display:flex; gap:16px; align-items:flex-start; margin:8px 0; }
+.preview-img { width:256px; height:256px; border-radius:6px; border:2px solid #333;
+  image-rendering:pixelated; background:#0a0a1a; flex-shrink:0; }
+.preview-info { font-size:13px; }
+.preview-info b { color:#a8dadc; }
+.anim-controls { display:flex; gap:6px; align-items:center; margin:4px 0; }
+.anim-controls button { padding:3px 10px; background:#0f3460; color:#e0e0e0; border:1px solid #444;
+  border-radius:4px; cursor:pointer; font-size:14px; }
+.anim-controls button:hover { background:#1a5276; }
+.anim-controls button.playing { background:#e94560; }
+.speed-display { font-size:11px; color:#888; min-width:50px; }
+.slider { flex:1; }
+</style>
+</head>
+<body>
+<h1>Sentinel-2 Image Chip Gallery</h1>
+<p class="summary"><a href="/">← Back to Explorer</a> | 64x64 pixel (640m) true-color chips from S2 L2A</p>
+<div class="controls">
+  <label style="font-size:12px;color:#999;">Dataset:</label>
+  <select id="dsSelect" onchange="filterDataset()"><option value="all">All</option></select>
+  <span id="statsSpan" style="font-size:11px;color:#888;"></span>
+</div>
+<div id="gallery"></div>
+
+<script>
+let chipIndex = {};
+let animTimer = null;
+let animInterval = 250;
+let activeLocId = null;
+let activeChips = [];
+let activeIdx = 0;
+
+async function init() {
+  chipIndex = await fetch('/api/chips/index').then(r => r.json());
+  const sel = document.getElementById('dsSelect');
+  let totalLocs = 0, totalChips = 0;
+  for (const [ds, locs] of Object.entries(chipIndex)) {
+    const n = Object.keys(locs).length;
+    const nc = Object.values(locs).reduce((s,v) => s + v.length, 0);
+    totalLocs += n; totalChips += nc;
+    const opt = document.createElement('option');
+    opt.value = ds; opt.textContent = `${ds} (${n} sites, ${nc} chips)`;
+    sel.appendChild(opt);
+  }
+  document.getElementById('statsSpan').textContent = `${totalLocs} locations, ${totalChips} chips`;
+  filterDataset();
+}
+
+function filterDataset() {
+  const ds = document.getElementById('dsSelect').value;
+  const gallery = document.getElementById('gallery');
+  gallery.innerHTML = '';
+  stopAnim();
+
+  const datasets = ds === 'all' ? Object.entries(chipIndex) : [[ds, chipIndex[ds]]];
+
+  for (const [dsName, locs] of datasets) {
+    const h2 = document.createElement('h2');
+    h2.textContent = `${dsName} (${Object.keys(locs).length} locations)`;
+    gallery.appendChild(h2);
+
+    for (const [locId, dates] of Object.entries(locs)) {
+      const sec = document.createElement('div');
+      sec.className = 'loc-section';
+      sec.id = 'loc-' + locId;
+
+      // Header
+      const hdr = document.createElement('div');
+      hdr.className = 'loc-header';
+      hdr.innerHTML = `<h3>${locId}</h3><span class="loc-meta">${dates.length} chips (${dates[0]} .. ${dates[dates.length-1]})</span>`;
+      hdr.onclick = () => toggleLoc(dsName, locId, dates, sec);
+      sec.appendChild(hdr);
+
+      // Preview area (hidden initially)
+      const prevDiv = document.createElement('div');
+      prevDiv.className = 'preview-area';
+      prevDiv.id = 'prev-' + locId;
+      prevDiv.style.display = 'none';
+      prevDiv.innerHTML = `
+        <img class="preview-img" id="pimg-${locId}" src="" alt="preview">
+        <div>
+          <div class="preview-info" id="pinfo-${locId}"></div>
+          <div class="anim-controls">
+            <button onclick="toggleAnim('${dsName}','${locId}')" id="playbtn-${locId}">▶ Play</button>
+            <button onclick="changeSpeed(false)">−</button>
+            <button onclick="changeSpeed(true)">+</button>
+            <span class="speed-display" id="speed-display">${animInterval}ms</span>
+            <input type="range" class="slider" id="slider-${locId}" min="0" max="${dates.length-1}" value="0"
+              oninput="seekChip('${dsName}','${locId}',parseInt(this.value))">
+          </div>
+          <div class="strip" id="strip-${locId}"></div>
+        </div>
+      `;
+      sec.appendChild(prevDiv);
+
+      gallery.appendChild(sec);
+    }
+  }
+}
+
+function toggleLoc(ds, locId, dates, sec) {
+  const prev = document.getElementById('prev-' + locId);
+  if (prev.style.display === 'none') {
+    prev.style.display = 'flex';
+    buildStrip(ds, locId, dates);
+    seekChip(ds, locId, 0);
+  } else {
+    prev.style.display = 'none';
+    stopAnim();
+  }
+}
+
+function buildStrip(ds, locId, dates) {
+  const strip = document.getElementById('strip-' + locId);
+  if (strip.children.length > 0) return; // already built
+  dates.forEach((d, i) => {
+    const div = document.createElement('div');
+    div.className = 'chip';
+    div.id = `c-${locId}-${i}`;
+    const img = document.createElement('img');
+    img.src = `/api/chip/${ds}/${locId}/${d}.jpg`;
+    img.loading = 'lazy';
+    div.appendChild(img);
+    const lbl = document.createElement('div');
+    lbl.className = 'chip-lbl';
+    lbl.textContent = d.slice(5);
+    div.appendChild(lbl);
+    div.onclick = () => seekChip(ds, locId, i);
+    strip.appendChild(div);
+  });
+}
+
+function seekChip(ds, locId, idx) {
+  activeLocId = locId;
+  activeChips = chipIndex[ds][locId];
+  activeIdx = idx;
+  const date = activeChips[idx];
+
+  // Update preview
+  document.getElementById('pimg-' + locId).src = `/api/chip/${ds}/${locId}/${date}.jpg`;
+  document.getElementById('pinfo-' + locId).innerHTML = `<b>${date}</b> &nbsp; ${idx+1} / ${activeChips.length}`;
+  const slider = document.getElementById('slider-' + locId);
+  if (slider) slider.value = idx;
+
+  // Highlight in strip
+  const strip = document.getElementById('strip-' + locId);
+  if (strip) {
+    [...strip.children].forEach((c, i) => c.classList.toggle('selected', i === idx));
+    if (strip.children[idx]) strip.children[idx].scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+  }
+}
+
+function toggleAnim(ds, locId) {
+  if (animTimer) {
+    stopAnim();
+  } else {
+    activeLocId = locId;
+    activeChips = chipIndex[ds][locId];
+    const btn = document.getElementById('playbtn-' + locId);
+    if (btn) { btn.textContent = '⏸ Pause'; btn.classList.add('playing'); }
+    animTimer = setInterval(() => {
+      activeIdx = (activeIdx + 1) % activeChips.length;
+      seekChip(ds, locId, activeIdx);
+    }, animInterval);
+  }
+}
+
+function stopAnim() {
+  if (animTimer) { clearInterval(animTimer); animTimer = null; }
+  if (activeLocId) {
+    const btn = document.getElementById('playbtn-' + activeLocId);
+    if (btn) { btn.textContent = '▶ Play'; btn.classList.remove('playing'); }
+  }
+}
+
+function changeSpeed(faster) {
+  animInterval = faster ? Math.max(50, animInterval - 50) : Math.min(1000, animInterval + 50);
+  document.getElementById('speed-display').textContent = animInterval + 'ms';
+  if (animTimer && activeLocId) {
+    clearInterval(animTimer);
+    const ds = document.getElementById('dsSelect').value === 'all' ?
+      Object.keys(chipIndex).find(d => chipIndex[d][activeLocId]) : document.getElementById('dsSelect').value;
+    animTimer = setInterval(() => {
+      activeIdx = (activeIdx + 1) % activeChips.length;
+      seekChip(ds, activeLocId, activeIdx);
+    }, animInterval);
+  }
+}
+
+init();
+</script>
+</body>
+</html>

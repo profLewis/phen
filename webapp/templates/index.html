@@ -356,9 +356,8 @@ function loadDatasetLayer(id, andZoom) {
       m.on('click', (e) => {
         selectPixel(loc.lon, loc.lat, e.originalEvent.shiftKey);
         if (!e.originalEvent.shiftKey) {
-          // Try loading pre-downloaded chips for this location
           loadChipsForLocation(id, loc.id);
-          setTimeout(doExtract, 200);
+          setTimeout(doExtract, 300);
         }
       });
       dl.group.addLayer(m);
@@ -516,7 +515,7 @@ async function doExtract() {
 
   // Clear charts immediately when starting new extraction
   if (chipAnimTimer) { clearInterval(chipAnimTimer); chipAnimTimer = null; }
-  document.getElementById('chipViewer').style.display = 'none';
+  // Don't hide chip viewer — chips may already be loading from marker click
   initLiveChart();
   Plotly.purge('bandChart');
 
